@@ -1,16 +1,25 @@
-# This is a sample Python script.
+from pyguppy_client_lib import helper_functions
+from pyguppy_client_lib.pyclient import PyGuppyClient
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+# A basecall server requires:
+#  * A location to put log files (on your PC)
+#  * An initial config file to load
+#  * A port to run on
+server_args = ["--log_path", "/home/myuser/guppy_server_logs",
+               "--config", "dna_r9.4.1_450bps_fast.cfg",
+               "--port", '-auto']
+# The second argument is the directory where the
+# guppy_basecall_server executable is found. Update this as
+# appropriate.
+
+server_args = ['--version']
+helper_functions.run_server(server_args, "/opt/ont/guppy/bin")
+
+# helper_functions.get_server_stats(r'/opt/ont/guppy/bin/guppy_basecall_server', 1)
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
-
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+# client = PyGuppyClient(
+#     "127.0.0.1:5555",
+#     "dna_r9.4.1_450bps_fast"
+# )
+# client.connect()
