@@ -9,6 +9,8 @@ from pyguppy_client_lib import helper_functions
 
 config = "dna_r9.4.1_450bps_fast"
 read_file = "/media/noort/Data/users/kuijntjes/2022-01-18_12samplemethylationtest/no_sample/20220118_1825_MN30914_ACR467_7759a37d/fast5_pass/barcode04/ACR467_pass_barcode04_6749c10b_0.fast5"
+read_file = "/home/john/Documents/Nanopore/barcode04/called/workspace/ACR467_pass_barcode04_6749c10b_0.fast5"
+
 
 with GuppyBasecallerClient(config_name=config) as client:
     for read in yield_reads(read_file):
