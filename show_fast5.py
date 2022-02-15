@@ -58,3 +58,4 @@ filename = r'/home/john/Documents/Nanopore/barcode04/called/workspace/ACR467_pas
 # filename = r'/home/john/Documents/Nanopore/202006/called/workspace/FAL22238_pass_1d8860a5_10.fast5.temp'
 read_info(filename)
 read_modifications(filename)
+
