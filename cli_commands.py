@@ -22,7 +22,7 @@ def multi_to_single_command(data_folder, output_folder):
     print(cmd, '\n')
 
 
-def megalodon_command(data_folder, output_folder, config_file, ref_file):
+def megalodon_command(data_folder, config_file, ref_file):
     print('<<<megalodon_command command>>>:')
     cmd = f'megalodon {data_folder}'
     cmd += f' --guppy-config {config_file}'
@@ -73,4 +73,4 @@ if __name__ == '__main__':
     output_folder = r'/home/john/Documents/Nanopore/barcode04/megalodon'
     ref_file = r'/home/john/Documents/Nanopore/CP130_pUC18_16x197.fasta'
     config_file = r'dna_r9.4.1_450bps_hac.cfg'
-    megalodon_command(fast5_folder, output_folder, config_file, ref_file)
+    megalodon_command(fast5_folder, config_file, ref_file)
