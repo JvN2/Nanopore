@@ -37,40 +37,24 @@ def megalodon_command(data_folder, config_file, ref_file):
 
 
 if __name__ == '__main__':
-    data_folder = r'/media/noort/Data/users/noort/test4/barcode02'
-    output_folder = r'/media/noort/Data/users/noort/test4/called2'
-    config_file = r'/media/noort/Data/users/noort/test2/dna_r9.4.1_450bps_hac.cfg'
-
-    config_file = r'/opt/ont/guppy/data/dna_r9.4.1_450bps_modbases_5mc_hac.cfg'
-    data_folder = r'/media/noort/Data/users/noort/test4/barcode04'
-    output_folder = r'/media/noort/Data/users/noort/test4/called04'
-
-    data_folder = r'/home/john/Documents/Nanopore/barcode04'
-    output_folder = r'/home/john/Documents/Nanopore/barcode04/called'
     config_file = r'/opt/ont/guppy/data/dna_r9.4.1_450bps_hac.cfg'
-    config_file = r'/opt/ont/guppy/data/dna_r9.4.1_450bps_modbases_5mc_hac.cfg'
-
-    data_folder = r'/home/john/Documents/Nanopore/202006'
-    output_folder = r'/home/john/Documents/Nanopore/202006/called'
-
+    # config_file = r'/opt/ont/guppy/data/dna_r9.4.1_450bps_modbases_5mc_hac.cfg'
+    data_folder = r'/media/noort/Data/users/noort/test/barcode04'
+    output_folder = data_folder + r'/called_nomethylation'
     guppy_command(data_folder, output_folder, config_file)
 
-    # data_folder = r'/media/noort/Data/users/noort/test4/barcode02'
-    # data_folder = r'/media/noort/Data/users/noort/test3/called1/workspace'
-    data_folder = output_folder
-    output_folder = output_folder + r'/single_fast5'
-    multi_to_single_command(data_folder, output_folder)
+    config_file = r'dna_r9.4.1_450bps_modbases_5mc_hac.cfg'
+    ref_file = r'//media/noort/Data/users/noort/test/S_CP130_pUC18_16x197.fasta'
+    megalodon_command(output_folder, config_file, ref_file)
 
+    if False:
+        data_folder = output_folder
+        output_folder = output_folder + r'/single_fast5'
+        multi_to_single_command(data_folder, output_folder)
 
-    fasta_file = r'/media/noort/Data/users/noort/test2/S_CP130_pUC18_16x197.fasta'
-    ont_fast5_api=r'/media/noort/Data/users/noort/test2/HS_BAC.fasta'
-    fast5_folder = r'/media/noort/Data/users/noort/test3/called1'
-    tombo_command(fast5_folder, fasta_file)
+    if False:
+        fasta_file = r'/media/noort/Data/users/noort/test2/S_CP130_pUC18_16x197.fasta'
+        ont_fast5_api=r'/media/noort/Data/users/noort/test2/HS_BAC.fasta'
+        fast5_folder = r'/media/noort/Data/users/noort/test3/called1'
+        tombo_command(fast5_folder, fasta_file)
 
-    data_folder = r'/home/john/Documents/Nanopore/barcode04'
-    data_folder = r'/home/john/Documents/Nanopore/barcode04/called/workspace'
-    data_folder = r'/home/john/Documents/Nanopore/20220118_1825_MN30914_ACR467_7759a37d'
-    output_folder = r'/home/john/Documents/Nanopore/barcode04/megalodon'
-    ref_file = r'/home/john/Documents/Nanopore/CP130_pUC18_16x197.fasta'
-    config_file = r'dna_r9.4.1_450bps_hac.cfg'
-    megalodon_command(fast5_folder, config_file, ref_file)

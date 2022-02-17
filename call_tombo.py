@@ -64,10 +64,10 @@ def call_tombo(fast5_fn, reference_fn, show = False):
 
 
 fasta_file = r'/media/noort/Data/users/noort/test2/S_CP130_pUC18_16x197.fasta'
-fasta_file = r'/media/noort/Data/users/noort/test2/HS_BAC.fasta'
+# fasta_file = r'/media/noort/Data/users/noort/test2/HS_BAC.fasta'
 fast5_file = r'/media/noort/Data/users/noort/test4/barcode02/called/0/0a873c73-a0cf-4654-ab8f-236667df61de.fast5'
 fast5_files = glob.glob(r'/media/noort/Data/users/noort/test4/barcode02/called/0/*.fast5')
-fast5_files = glob.glob(r'/media/noort/Data/users/noort/test4/called04/single_fast5/0/*.fast5')
+# fast5_files = glob.glob(r'/media/noort/Data/users/noort/test4/called04/single_fast5/0/*.fast5')
 
 for fast5_file in fast5_files:
     print(fast5_file)

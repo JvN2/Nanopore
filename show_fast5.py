@@ -70,7 +70,24 @@ filename = r'/home/john/Documents/Nanopore/barcode04/called/workspace/ACR467_pas
 # read_fast5(filename)
 
 filename = r'C:\Users\noort\Downloads\fastq_runid_1d8860a5a693832b45cbe93cd13b8886c3f0b5f4_0_0.fastq'
-for i in range(200):
-    seq, quality = read_fastq(filename, i)
-    align(pCP115, seq, True)
+filename_meth = r'/media/noort/Data/users/noort/test/barcode04/called_withmethylation/pass/fastq_runid_6749c10bc43747f33508adb64ddbcc4a8b108508_0_0.fastq'
+filename_nometh = r'/media/noort/Data/users/noort/test/barcode04/called_nomethylation/pass/fastq_runid_6749c10bc43747f33508adb64ddbcc4a8b108508_0_0.fastq'
 
+# for i in range(200):
+#     seq, quality = read_fastq(filename, i)
+#     align(pCP115, seq, True)
+
+# filename = '/media/noort/Data/users/noort/2020-05-12/called_2/FAL22238_pass_1d8860a5_0.fast5'
+scores = []
+for i in range(100):
+    seq_m, quality = read_fastq(filename_meth,i)
+    seq_nm, quality = read_fastq(filename_nometh,i)
+    a = align( pCP130, seq_nm , False)
+    try:
+        scores.append([a[0].score, a[0].end])
+    except IndexError:
+        break
+scores = np.asarray(scores).T
+plt.scatter(scores[1], scores[0]/scores[1])
+plt.ylim((-0.05, 1.05))
+plt.show()
