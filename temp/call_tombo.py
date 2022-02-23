@@ -1,7 +1,6 @@
 import h5py, mappy
 import numpy as np
 from tombo import tombo_helper, tombo_stats, resquiggle
-from ont_fast5_api.fast5_interface import get_fast5_file
 import show_squiggle
 from Bio import pairwise2
 import matplotlib.pyplot as plt
