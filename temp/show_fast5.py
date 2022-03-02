@@ -78,59 +78,8 @@ def read_bam(filename, read_nr=0):
     print(samfile.reference_filename)
     return
 
-filename = r'/home/john/Documents/Nanopore/barcode04/called/workspace/ACR467_pass_barcode04_6749c10b_0.fast5'
-filename =r'/media/noort/Data/users/noort/test2/methylation_call/workspace/0ffb91eb-ab25-47a1-93da-7e4edb87e409.fast5'
-# filename = r'/home/john/Documents/Nanopore/202006/called/workspace/FAL22238_pass_1d8860a5_10.fast5.temp'
-# read_info(filename, True)
-seq, quality, mod, mod_alphabet = read_fast5(filename)
-
-
-read = mappy.fastx_read(filename)
-
-print(list(read))
-
-# print('seq: ', seq)
-# for i in [1,2]:
-#     print(f'  {mod_alphabet[i]}: ', prob_to_ascii(mod[:,i]))
-
-
-filename = r'C:\Users\noort\Downloads\fastq_runid_1d8860a5a693832b45cbe93cd13b8886c3f0b5f4_0_0.fastq'
-filename_meth = r'/media/noort/Data/users/noort/test/barcode04/called_withmethylation/pass/fastq_runid_6749c10bc43747f33508adb64ddbcc4a8b108508_0_0.fastq'
-filename_nometh = r'/media/noort/Data/users/noort/test/barcode04/called_nomethylation/pass/fastq_runid_6749c10bc43747f33508adb64ddbcc4a8b108508_0_0.fastq'
-
-# for i in range(200):
-#     seq, quality = read_fastq(filename, i)
-#     align(pCP115, seq, True)
-
-# filename = '/media/noort/Data/users/noort/2020-05-12/called_2/FAL22238_pass_1d8860a5_0.fast5'
-# scores = []
-# for i in range(100):
-#     seq_m, quality = read_fastq(filename_meth,i)
-#     seq_nm, quality = read_fastq(filename_nometh,i)
-#     a = align( pCP130, seq_nm , False)
-#     try:
-#         scores.append([a[0].score, a[0].end])
-#     except IndexError:
-#         break
-# scores = np.asarray(scores).T
-# plt.scatter(scores[1], scores[0]/scores[1])
-# plt.ylim((-0.05, 1.05))
-# plt.show()
-
-# filename = r'/media/noort/Data/users/noort/test2/20220118_1825_MN30914_ACR467_7759a37d/bam_pass/unclassified/ACR467_pass_unclassified_6749c10b_0.bam'
-# read_bam(filename, False)
-
-# filename =r'/media/noort/Data/users/noort/ref_files/GAL_locus+14xPP7+2xRS_circle_V2.fasta'
-# ref = read_fasta(filename)
-# filename = r'/media/noort/Data/users/noort/test/barcode04/called_nomethylation/workspace/ACR467_pass_barcode04_6749c10b_0.fast5'
-# for i in range(100):
-#     try:
-#         seq, quality = read_fastq(filename,i)
-#         a = align( ref, seq , True)
-#     except IndexError:
-#         break
-
-filename = r'/media/noort/Data/users/noort/test3/FAL22238_pass_1d8860a5_1.fast5'
+filename = r'/media/noort/Data/users/noort/test5/0/fffe966d-ec6f-4c0d-be65-b1a466a60a11.fast5'
+print(filename)
 read_info(filename, True)
 
 # print(read_fast5(filename))

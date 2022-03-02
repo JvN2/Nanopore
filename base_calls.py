@@ -96,13 +96,14 @@ def plot_mods(ref_file, mod_base_file, chrm):
 
 
 
-data_folder = r'/media/noort/Data/users/noort/test3/'
+data_folder = r'/media/noort/Data/users/noort/test4/'
 # data_folder = r'/media/noort/Data/users/noort/test4/barcode04'
 output_folder = r'megalodon_data4/'
 config_file = r'dna_r9.4.1_450bps_modbases_5mc_hac.cfg'
 ref_file = r'/media/noort/Data/users/noort/ref_files/ref_601s.fasta'
 mod_base_file = data_folder + output_folder + 'per_read_modified_base_calls.txt'
 
-megalodon_command(data_folder, config_file, ref_file, output_folder)
+# megalodon_command(data_folder, config_file, ref_file, output_folder)
 
-# plot_mods(ref_file, mod_base_file, 'pCP130')
+mod_base_file = r'/media/noort/Data/users/noort/test4/megalodon_results/per_read_modified_base_calls.txt'
+plot_mods(ref_file, mod_base_file, 'pCP130')
