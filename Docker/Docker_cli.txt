@@ -1,0 +1,11 @@
+docker build -t megalodon_jvn:0.1 .
+
+docker stop $(docker ps -aq)
+docker container prune
+docker image prune
+
+docker images
+docker container ls
+
+docker run --name box -it 4b5e30427a3a /bin/bash
+docker cp  /home/noort/Downloads/Nanopore/data/. box:/home/data
