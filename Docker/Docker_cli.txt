@@ -1,4 +1,5 @@
-docker build -t megalodon_jvn:0.1 .
+
+docker build -t megalodon_jvn:0.2 .
 
 docker stop $(docker ps -aq)
 docker container prune
@@ -7,5 +8,20 @@ docker image prune
 docker images
 docker container ls
 
-docker run --name box -it 4b5e30427a3a /bin/bash
+docker run --name box -it 3d9284e93cfe /bin/bash
 docker cp  /home/noort/Downloads/Nanopore/data/. box:/home/data
+
+megalodon_extras modified_bases describe_alphabet --guppy-server-path /usr/bin/guppy_basecall_server
+
+megalodon /home/data/ \
+    --outputs basecalls mappings mod_mappings mods \
+    --reference combined.fasta \
+    --guppy-server-path /usr/bin/guppy_basecall_server \
+    --overwrite
+ 
+megalodon /home/data/ \
+    --guppy-server-path /usr/bin/guppy_basecall_server \
+    --guppy-config /home/rerio/basecall_models/res_dna_r941_min_modbases-all-context_v001.cfg \
+    --outputs basecalls mappings mod_mappings mods \
+    --reference combined.fasta \
+    --overwrite

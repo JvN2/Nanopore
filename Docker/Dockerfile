@@ -14,7 +14,6 @@ MAINTAINER jvn2 <noort@physics.leidenuniv.nl>
 
 ARG GUPPY_VERSION=5.0.7
 ARG MEGALODON_VERSION=2.3.1
-ARG DEBIAN_FRONTEND=noninteractive
 ARG CONDA_VERSION=py38_4.9.2
 ARG SAMTOOLS_VERSION=1.11
 ARG CONDA_MD5=122c8c9beb51e124ab32a0fa6426c656
@@ -64,15 +63,19 @@ RUN apt-get update -y && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
     /opt/conda/bin/conda clean -afy && \
 
+#    cd /tmp &&\
+#    wget -q https://mirror.oxfordnanoportal.com/software/analysis/ont_guppy_${GUPPY_VERSION}-1~xenial_amd64.deb && \
+#    dpkg -i --ignore-depends=nvidia-384,libcuda1-384 /tmp/ont_guppy_${GUPPY_VERSION}-1~xenial_amd64.deb && \
+#    rm *.deb && \
     cd /tmp &&\
-    wget -q https://mirror.oxfordnanoportal.com/software/analysis/ont_guppy_${GUPPY_VERSION}-1~xenial_amd64.deb && \
-    dpkg -i --ignore-depends=nvidia-384,libcuda1-384 /tmp/ont_guppy_${GUPPY_VERSION}-1~xenial_amd64.deb && \
+    wget -q https://mirror.oxfordnanoportal.com/software/analysis/ont_guppy_cpu_${GUPPY_VERSION}-1~xenial_amd64.deb && \
+    dpkg -i /tmp/ont_guppy_cpu_${GUPPY_VERSION}-1~xenial_amd64.deb && \
     rm *.deb && \
 
     pip3 install numpy cython ont_pyguppy_client_lib  && \
 
     pip3 install megalodon==${MEGALODON_VERSION} && \
-   
+
     #install samtools so megalodon works with --sort-mappings
     wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/samtools-${SAMTOOLS_VERSION}.tar.bz2 && \
     tar -xf samtools-${SAMTOOLS_VERSION}.tar.bz2 && \
@@ -83,9 +86,10 @@ RUN apt-get update -y && \
     cd ..  && \
     rm samtools-${SAMTOOLS_VERSION}.tar.bz2 && \
 
-    #git clone https://github.com/nanoporetech/rerio /home/rerio && \
-    #/home/rerio/download_model.py /home/rerio/basecall_models/res_dna_r941_min_modbases_5mC_CpG_v001 && \
-    #/home/rerio/download_model.py /home/rerio/basecall_models/res_dna_r941_min_modbases_5mC_5hmC_CpG_v001 && \
+    git clone https://github.com/nanoporetech/rerio /home/rerio && \
+    /home/rerio/download_model.py /home/rerio/basecall_models/res_dna_r941_min_modbases_5mC_CpG_v001 && \
+    /home/rerio/download_model.py /home/rerio/basecall_models/res_dna_r941_min_modbases_5mC_5hmC_CpG_v001 && \
+    /home/rerio/download_model.py /home/rerio/basecall_models/res_dna_r941_min_modbases-all-context_v001 && \
 
     mkdir -p /home/ont-guppy/bin && \
     ln -s /usr/bin/guppy_basecall_server /home/ont-guppy/bin/guppy_basecall_server && \
