@@ -63,10 +63,6 @@ RUN apt-get update -y && \
     find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
     /opt/conda/bin/conda clean -afy && \
 
-#    cd /tmp &&\
-#    wget -q https://mirror.oxfordnanoportal.com/software/analysis/ont_guppy_${GUPPY_VERSION}-1~xenial_amd64.deb && \
-#    dpkg -i --ignore-depends=nvidia-384,libcuda1-384 /tmp/ont_guppy_${GUPPY_VERSION}-1~xenial_amd64.deb && \
-#    rm *.deb && \
     cd /tmp &&\
     wget -q https://mirror.oxfordnanoportal.com/software/analysis/ont_guppy_cpu_${GUPPY_VERSION}-1~xenial_amd64.deb && \
     dpkg -i /tmp/ont_guppy_cpu_${GUPPY_VERSION}-1~xenial_amd64.deb && \

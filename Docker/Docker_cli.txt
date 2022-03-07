@@ -8,7 +8,7 @@ docker image prune
 docker images
 docker container ls
 
-docker run --name box -it 3d9284e93cfe /bin/bash
+docker run --name box -it dfa4b886caa2 /bin/bash
 docker cp  /home/noort/Downloads/Nanopore/data/. box:/home/data
 
 megalodon_extras modified_bases describe_alphabet --guppy-server-path /usr/bin/guppy_basecall_server
