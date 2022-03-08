@@ -13,7 +13,7 @@ CMD ["redis-server", "--protected-mode no"]
 MAINTAINER jvn2 <noort@physics.leidenuniv.nl>
 
 ARG GUPPY_VERSION=5.0.7
-ARG MEGALODON_VERSION=2.3.1
+ARG MEGALODON_VERSION=2.3.5
 ARG CONDA_VERSION=py38_4.9.2
 ARG SAMTOOLS_VERSION=1.11
 ARG CONDA_MD5=122c8c9beb51e124ab32a0fa6426c656
@@ -68,7 +68,7 @@ RUN apt-get update -y && \
     dpkg -i /tmp/ont_guppy_cpu_${GUPPY_VERSION}-1~xenial_amd64.deb && \
     rm *.deb && \
 
-    pip3 install numpy cython ont_pyguppy_client_lib  && \
+    pip3 install numpy cython ont_pyguppy_client_lib==${GUPPY_VERSION} && \
 
     pip3 install megalodon==${MEGALODON_VERSION} && \
 

@@ -90,9 +90,11 @@ def plot_mods(ref_file, mod_base_file, chrm):
     #     plt.plot(im[i])
     # plt.show()
     # return
-    plt.imshow(im, vmin= -2, vmax= 2,  origin = 'lower', cmap=plt.get_cmap('seismic'), aspect = 'auto')#, interpolation='none') #
-    plt.show()
-
+    if im.any():
+        plt.imshow(im, vmin= -2, vmax= 2,  origin = 'lower', cmap=plt.get_cmap('seismic'), aspect = 'auto')#, interpolation='none') #
+        plt.show()
+    else:
+        print('No reads found that match criteria')
 
 
 
@@ -105,5 +107,5 @@ mod_base_file = data_folder + output_folder + 'per_read_modified_base_calls.txt'
 
 # megalodon_command(data_folder, config_file, ref_file, output_folder)
 
-mod_base_file = r'/media/noort/Data/users/noort/test4/megalodon_results/per_read_modified_base_calls.txt'
+mod_base_file = r'/media/noort/Data/users/noort/test8/megalodon_results//per_read_modified_base_calls.txt'
 plot_mods(ref_file, mod_base_file, 'pCP130')

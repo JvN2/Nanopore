@@ -1,15 +1,20 @@
 
-docker build -t megalodon_jvn:0.2 .
+docker build -t megalodon_jvn:0.3 .
 
 docker stop $(docker ps -aq)
 docker container prune
 docker image prune
+docker system prune -a
 
 docker images
 docker container ls
 
-docker run --name box -it dfa4b886caa2 /bin/bash
-docker cp  /home/noort/Downloads/Nanopore/data/. box:/home/data
+docker run --name box -it bec704416ce8 /bin/bash
+docker cp /media/noort/Data/users/noort/data_to_docker/. box:/home/data
+docker cp box:/home/data/. /media/noort/Data/users/noort/data_from_docker
+
+docker cp /media/noort/Data/users/noort/2022-01-18_12samplemethylationtest/no_sample/20220118_1825_MN30914_ACR467_7759a37d/fast5_pass/barcode04/ACR467_pass_barcode04_6749c10b_0.fast5 box:/home/data/ACR467_pass_barcode04_6749c10b_0.fast5
+docker cp /media/noort/Data/users/noort/ref_files/combined.fasta box:/home/data/combined.fasta
 
 megalodon_extras modified_bases describe_alphabet --guppy-server-path /usr/bin/guppy_basecall_server
 
