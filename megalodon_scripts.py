@@ -36,7 +36,7 @@ def cmd_megalodon():
 def cmd_guppy():
     cmd = [rf'guppy_basecaller']
     cmd.append(rf'-i {FAST5_FILES}')
-    cmd.append(rf'-s {FAST5_FILES}results_guppy')
+    cmd.append(rf'-s {FAST5_FILES}guppy')
     cmd.append(rf'-d {RERIO_MODELS}')
     cmd.append(rf'-c {GUPPY_CONFIG}')
     cmd.append(rf'--cpu_threads_per_caller 18')

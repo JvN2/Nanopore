@@ -18,6 +18,7 @@ ARG MEGALODON_VERSION=2.4.1
 ARG CONDA_VERSION=py38_4.9.2
 ARG SAMTOOLS_VERSION=1.11
 ARG CONDA_MD5=122c8c9beb51e124ab32a0fa6426c656
+ARG TOMBO_VERSION=1.5.1
 
 WORKDIR /home
 
@@ -82,6 +83,8 @@ RUN apt-get update -y && \
     make install  && \
     cd ..  && \
     rm samtools-${SAMTOOLS_VERSION}.tar.bz2 && \
+
+    pip3 install ont-tombo==${TOMBO_VERSION} && \
 
     git clone https://github.com/nanoporetech/rerio /home/rerio && \
     /home/rerio/download_model.py /home/rerio/basecall_models/res_dna_r941_min_modbases_5mC_CpG_v001 && \
