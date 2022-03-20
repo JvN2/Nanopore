@@ -36,7 +36,7 @@ def cmd_preprocess(single=True):
 
 # re-squiggle raw reads
 def cmd_resquigle():
-    cmd = [rf'tombo resquiggle {FAST5_FILES}tombo_results {REFRENCE_GENOME}']
+    cmd = [rf'tombo resquiggle {FAST5_FILES}tombo {REFRENCE_GENOME}']
     # cmd.append(rf'--processes = 4')
     cmd.append(rf'--num-most-common-errors 5')
     return ' \\\n'.join(cmd)

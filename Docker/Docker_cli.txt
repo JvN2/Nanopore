@@ -9,7 +9,7 @@ docker system prune -a
 docker images
 docker container ls
 
-docker run --name box -it 12aa0fde27e1 /bin/bash
+docker run --name box -it badcad167147 /bin/bash
 
 #linux
 docker cp /media/noort/Data/users/noort/docker/to_container/. box:/home/data
