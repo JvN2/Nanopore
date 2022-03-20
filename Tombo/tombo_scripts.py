@@ -16,21 +16,22 @@ else:
 
 
 # multi-to single
-def cmd_to_single():
+def cmd_to_single(single=True):
     cmd = [rf'multi_to_single_fast5']
     cmd.append(rf'-i {FAST5_FILES}')
     cmd.append(rf'-s  {FAST5_FILES}tombo/')
-    return ' \\\n'.join(cmd)
+    if single: cmd = ' \\\n'.join(cmd)
+    return cmd
 
 
-
-def cmd_preprocess():
+def cmd_preprocess(single=True):
     cmd = [rf'tombo preprocess annotate_raw_with_fastqs']
     cmd.append(rf'--fast5-basedir {FAST5_FILES}')
-    cmd.append(rf'--fastq-filenames {FAST5_FILES}guppy/pass/fastq_runid_6749c10bc43747f33508adb64ddbcc4a8b108508_0_0.fastq')
+    cmd.append(
+        rf'--fastq-filenames {FAST5_FILES}guppy/pass/*.fastq')
     cmd.append(rf'--overwrite')
-    return ' \\\n'.join(cmd)
-
+    if single: cmd = ' \\\n'.join(cmd)
+    return cmd
 
 
 # re-squiggle raw reads
@@ -50,6 +51,7 @@ def cmd_detect_mods():
     cmd.append(rf'--processes 4')
     return ' \\\n'.join(cmd)
 
+
 def cmd_guppy():
     cmd = [rf'guppy_basecaller']
     cmd.append(rf'-i {FAST5_FILES}')
@@ -57,6 +59,7 @@ def cmd_guppy():
     cmd.append(rf'-d {RERIO_MODELS}')
     cmd.append(rf'-c {GUPPY_CONFIG}')
     cmd.append(rf'--cpu_threads_per_caller 18')
+    cmd.append(rf'--fast5_out')
     return ' \\\n'.join(cmd)
 
 
