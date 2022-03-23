@@ -1,0 +1,49 @@
+
+docker build -t megalodon_jvn:0.4 .
+
+docker stop $(docker ps -aq)
+docker container prune
+docker image prune
+docker system prune -a
+
+docker images
+docker container ls
+
+docker run --name box -it badcad167147 /bin/bash
+
+#linux
+docker cp /media/noort/Data/users/noort/docker/to_container/. box:/home/data
+docker cp box:/home/data/. /media/noort/Data/users/noort/docker/from_container
+
+#w10
+docker cp C:\tmp\data\to_container\ box:/home/data
+docker cp box:/home/data/. C:\tmp\data\from_container
+docker cp box:/opt/conda/lib/python3.8/site-packages/megalodon/. C:\tmp\megalodon
+docker cp C:\tmp\megalodon\ box:/opt/conda/lib/python3.8/site-packages
+
+docker cp /media/noort/Data/users/noort/2022-01-18_12samplemethylationtest/no_sample/20220118_1825_MN30914_ACR467_7759a37d/fast5_pass/barcode04/ACR467_pass_barcode04_6749c10b_0.fast5 box:/home/data/ACR467_pass_barcode04_6749c10b_0.fast5
+docker cp /media/noort/Data/users/noort/ref_files/combined.fasta box:/home/data/combined.fasta
+
+megalodon_extras modified_bases describe_alphabet --guppy-server-path /usr/bin/guppy_basecall_server
+
+guppy_basecaller \
+-i /home/data/ \
+-s /home/data/results_guppy \
+-d /home/rerio/basecall_models/ \
+-c res_dna_r941_min_modbases-all-context_v001.cfg \
+--cpu_threads_per_caller 18 \
+--
+--disable_pings
+
+megalodon /home/data/ \
+    --outputs basecalls mappings mod_mappings mods \
+    --reference /home/data/combined.fasta \
+    --guppy-server-path /usr/bin/guppy_basecall_server \
+    --overwrite
+ 
+megalodon /home/data/ \
+    --guppy-server-path /usr/bin/guppy_basecall_server \
+    --guppy-config /home/rerio/basecall_models/res_dna_r941_min_modbases-all-context_v001.cfg \
+    --outputs basecalls mappings mod_mappings mods \
+    --reference combined.fasta \
+    --overwrite
