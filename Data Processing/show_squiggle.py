@@ -29,6 +29,7 @@ def read_fast5(filename, print_all = False):
 
 if __name__ == '__main__':
     filename = '/home/noort/data/data_to_docker/ACR467_pass_barcode04_6749c10b_0.fast5'
+    filename = '/home/noort/data/Analysed_2022-01-18_12samplemethylationtest/guppy/workspace/barcode04/ACR467_pass_barcode04_6749c10b_0.fast5'
     # filename = '/media/noort/Data/users/noort/test2/called0/workspace/201bc07d-38fa-4566-b458-7cac4fd26964.fast5'
     # filename = '/media/noort/Data/users/noort/test2/called0/workspace/1c8d0eaf-9dad-4b2b-bfe2-a12aa8952561.fast5'
     # filename =r'/media/noort/Data/users/noort/test4/called04/single_fast5/0/97331af7-b49b-4676-97fc-6480624f6697.fast5'

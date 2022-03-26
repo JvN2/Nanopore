@@ -111,5 +111,5 @@ mod_base_file = data_folder + output_folder + 'per_read_modified_base_calls.txt'
 
 # megalodon_command(data_folder, config_file, ref_file, output_folder)
 
-mod_base_file = r'/media/noort/Data/users/noort/test8/megalodon_results//per_read_modified_base_calls.txt'
+mod_base_file = r'/home/noort/data/Analysed_2020-05-12/megalodon/per_read_modified_base_calls.txt'
 plot_mods(ref_file, mod_base_file, 'pCP130')

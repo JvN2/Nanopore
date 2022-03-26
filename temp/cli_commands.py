@@ -32,7 +32,7 @@ def megalodon_command(data_folder, config_file, ref_file):
     cmd += f' --outputs basecalls mod_mappings'
     cmd += f' --reference {ref_file}'
     # cmd += f' --devices 0 1 --processes 20'
-    cmd += f' --output-directory {data_folder+ r"/megalodon_data4"}'
+    cmd += f' --output-directory {data_folder+ r"megalodon"}'
     cmd += f' --overwrite'
     cmd += f' --write-mods-text'
 

@@ -24,7 +24,7 @@ def cmd_detect_mods(fast5_dir, model='alternative'):
         cmd = [rf'tombo detect_modifications de_novo']
     cmd.append(rf'--statistics-file-basename stats')
     cmd.append(rf'--per-read-statistics-basename read_stats')
-    cmd.append(rf'--processes 4')
+    cmd.append(rf'--processes 18')
     cmd.append(rf'--fast5-basedirs {fast5_dir}')
     return ' \\\n'.join(cmd)
 
@@ -32,7 +32,7 @@ def cmd_detect_mods(fast5_dir, model='alternative'):
 if __name__ == '__main__':
     config = 'local'
     if config == 'local':
-        fast5_dir = r'/home/noort/data/test21'
+        fast5_dir = r'/home/noort/data/Analysed_2022-01-18_12samplemethylationtest/guppy/workspace/barcode02'
         rerio_models = r'/home/noort/Downloads/rerio-master/basecall_models/'
         reference_genome = r'/media/noort/Data/users/noort/ref_files/combined.fa'
         guppy_config = r'res_dna_r941_min_modbases-all-context_v001.cfg'

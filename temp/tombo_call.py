@@ -1,4 +1,10 @@
+import os
+from multiprocessing import Pool
+
+from matplotlib import pyplot as plt
 from ont_fast5_api import multi_fast5
+from ont_fast5_api.conversion_tools.conversion_utils import get_fast5_file_list, get_progress_bar
+from ont_fast5_api.conversion_tools.multi_to_single_fast5 import convert_multi_to_single
 from ont_fast5_api.fast5_interface import get_fast5_file
 
 def print_all_raw_data(fast5_filepath):
@@ -6,6 +12,9 @@ def print_all_raw_data(fast5_filepath):
         for read in f5.get_reads():
             raw_data = read.get_raw_data()
             print(read.read_id, raw_data)
+
+    return raw_data
+
 
 
 def batch_convert_multi_files_to_single(input_path, output_folder, threads, recursive, follow_symlinks):
@@ -34,10 +43,10 @@ def batch_convert_multi_files_to_single(input_path, output_folder, threads, recu
     pool.join()
     pbar.finish()
 
-
-./.local/lib/python3.8/site-packages (4.0.0)/multi_to_single_fast5 --input_path /media/noort/Data/users/noort/test/pass/fastq_runid_6749c10bc43747f33508adb64ddbcc4a8b108508_0_0.fastq --save_path /media/noort/Data/users/noort/test/multi_to_single --recursive --t 20
-
-filename = "/media/noort/Data/users/noort/test/pass/fastq_runid_6749c10bc43747f33508adb64ddbcc4a8b108508_0_0.fastq"
+filename = "/home/noort/data/test21/tombo/0/00a2b3c7-6add-44f2-b171-3bd51e1ec637.fast5"
 # This can be a single- or multi-read file
-print_all_raw_data(filename)
-multi_fast5.Fast5Read.
+sq = print_all_raw_data(filename)
+
+from tombo import resquiggle
+
+resquiggle()
