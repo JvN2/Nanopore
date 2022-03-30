@@ -23,10 +23,13 @@ def cmd_megalodon(fast5_dir, reference_genome, guppy_bin, guppy_config, rerio_mo
     return ' \\\n'.join(cmd)
 
 
-def cmd_docker():
+def cmd_start_docker():
     image = 'badcad167147'
     cmd = [rf'docker run --name box -it {image} /bin/bash']
-    cmd.append(rf'docker cp /media/noort/Data/users/noort/docker/to_container/. box:/home/data')
+    return ' \\\n'.join(cmd)
+
+def cmd_copy_to_docker():
+    cmd = [rf'docker cp /media/noort/Data/users/noort/docker/to_container/. box:/home/data']
     return ' \\\n'.join(cmd)
 
 if __name__ == '__main__':
@@ -46,6 +49,7 @@ if __name__ == '__main__':
         guppy_bin = r'/usr/bin/guppy_basecall_server'
 
 
-    print(cmd_docker(), '\n')
+    print(cmd_start_docker())
+    print(cmd_copy_to_docker(), '\n')
     print(cmd_guppy(fast5_dir, guppy_config, rerio_models), '\n')
     print(cmd_megalodon(fast5_dir, reference_genome, guppy_bin, guppy_config, rerio_models), '\n')

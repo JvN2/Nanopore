@@ -13,6 +13,7 @@ def cmd_resquigle(fast5_dir, reference_genome):
     cmd = [rf'tombo resquiggle {fast5_dir}/tombo {reference_genome}']
     cmd.append(rf'--num-most-common-errors 5')
     cmd.append(rf'--overwrite')
+    cmd.append(rf'--skip-index')
     return ' \\\n'.join(cmd)
 
 
@@ -32,7 +33,7 @@ def cmd_detect_mods(fast5_dir, model='alternative'):
 if __name__ == '__main__':
     config = 'local'
     if config == 'local':
-        fast5_dir = r'/home/noort/data/Analysed_2022-01-18_12samplemethylationtest/guppy/workspace/barcode02'
+        fast5_dir = r'/media/noort/Data/users/noort/Analysed_2022-01-18_12samplemethylationtest/tombo/barcode03'
         rerio_models = r'/home/noort/Downloads/rerio-master/basecall_models/'
         reference_genome = r'/media/noort/Data/users/noort/ref_files/combined.fa'
         guppy_config = r'res_dna_r941_min_modbases-all-context_v001.cfg'

@@ -115,6 +115,14 @@ def read_megalodon_mods(filename):
     all_mods['length'] = [(np.max(row['pos']) - np.min(row['pos'])) for i, row in all_mods.iterrows()]
     return all_mods
 
+def read_tombo_events(filename):
+    events = pd.read_hdf(filename,'Analyses/RawGenomeCorrected_000/BaseCalled_template/Events')
+    with h5py.File(filename, 'r') as hf:
+        read_nr = list(hf['Raw/Reads'].keys())[0]
+        squiggle = np.asarray(hf[f'Raw/Reads/{read_nr}/Signal'])
+    return events, squiggle
+
+
 def read_tombo_mods(folder):
     filenames = glob.glob(folder + r'/*.per_read_stats')
     all_mods = pd.DataFrame()
@@ -173,10 +181,26 @@ def plot_mods(df, reference_fn, chrms=None, min_length=0):
             print('No reads found that match criteria')
 
 megalodon_filename = '/home/noort/data/Analysed_2020-05-12/megalodon/per_read_modified_base_calls.txt'
-tomb_folder = ''
+tombo_folder = '/home/noort/data/Analysed_2022-01-18_12samplemethylationtest/tombo'
+tombo_filename = '/media/noort/Data/users/noort/Analysed_2020-05-12/tombo/0/0a3fcfc7-628b-4397-aa6f-4a3e262407f0.fast5'
 guppy_folder = '/home/noort/data/Analysed_2022-01-18_12samplemethylationtest/guppy/workspace/barcode02'
 reference_filename = '/media/noort/Data/users/noort/ref_files/combined.fa'
 
-read_guppy_mods(guppy_folder, reference_filename)
-# all_mods = read_megalodon_mods(megalodon_filename)
-# plot_mods(all_mods, reference_filename, min_length=3000)
+# read_guppy_mods(guppy_folder, reference_filename)
+all_mods = read_megalodon_mods(megalodon_filename)
+plot_mods(all_mods, reference_filename, min_length=3000)
+
+df = read_tombo_mods(tombo_folder,)
+# events, squiggle = read_tombo_events(tombo_filename)
+# print(events)
+# squiggle_model = []
+# norm_mean = events['norm_mean'].values
+# length = events['length'].values
+# squiggle_model= []
+# for nm, l in zip(norm_mean, length):
+#     squiggle_model.append(nm*np.ones(l))
+# squiggle_model = np.asarray(squiggle_model).reshape((1,-1))
+#
+# print(squiggle_model)
+# plt.plot(squiggle_model)
+# plt.show()

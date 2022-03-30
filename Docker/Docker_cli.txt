@@ -10,6 +10,8 @@ docker images
 docker container ls
 
 docker run --name box -it badcad167147 /bin/bash
+docker run -P -it --name tombo --mount src=/media/noort/Data/users/noort,dst=/home,type=bind zakkidd/ont-tombo
+docker run -P -it --name megalodon --mount src=/media/noort/Data/users/noort,dst=/home,type=bind jvn2/megalodon_jvn
 
 #linux
 docker cp /media/noort/Data/users/noort/docker/to_container/. box:/home/data
