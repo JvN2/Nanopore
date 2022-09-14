@@ -71,8 +71,8 @@ RUN apt-get update -y && \
     rm *.deb && \
 
     pip3 install numpy cython ont_pyguppy_client_lib==${GUPPY_VERSION} && \
-
     pip3 install megalodon==${MEGALODON_VERSION} && \
+    pip3 install ont-tombo==${TOMBO_VERSION} && \
 
     #install samtools so megalodon works with --sort-mappings
     wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/samtools-${SAMTOOLS_VERSION}.tar.bz2 && \
@@ -83,8 +83,6 @@ RUN apt-get update -y && \
     make install  && \
     cd ..  && \
     rm samtools-${SAMTOOLS_VERSION}.tar.bz2 && \
-
-    pip3 install ont-tombo==${TOMBO_VERSION} && \
 
     git clone https://github.com/nanoporetech/rerio /home/rerio && \
     /home/rerio/download_model.py /home/rerio/basecall_models/res_dna_r941_min_modbases_5mC_CpG_v001 && \
