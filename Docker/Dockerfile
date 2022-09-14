@@ -94,8 +94,13 @@ RUN apt-get update -y && \
     mkdir -p /home/ont-guppy/bin && \
     ln -s /usr/bin/guppy_basecall_server /home/ont-guppy/bin/guppy_basecall_server && \
 
+    mkdir /home/nanopore && \
+    git clone https://github.com/JvN2/Nanopore.git /home/nanopore && \
+
     apt-get autoremove --purge --yes && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
+
+
 
 CMD ["echo", "Image created"]
