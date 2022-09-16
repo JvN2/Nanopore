@@ -70,6 +70,8 @@ RUN apt-get update -y && \
     dpkg -i /tmp/ont_guppy_cpu_${GUPPY_VERSION}-1~xenial_amd64.deb && \
     rm *.deb && \
 
+    #Newest version of pysam does not work with bzip2
+    pip3 install pysam==0.18.0 && \
     pip3 install numpy cython ont_pyguppy_client_lib==${GUPPY_VERSION} && \
     pip3 install megalodon==${MEGALODON_VERSION} && \
     pip3 install ont-tombo==${TOMBO_VERSION} && \
@@ -94,6 +96,8 @@ RUN apt-get update -y && \
 
     mkdir /home/nanopore && \
     git clone https://github.com/JvN2/Nanopore.git /home/nanopore && \
+
+    mkdir /home/data && \
 
     apt-get autoremove --purge --yes && \
     apt-get clean && \
