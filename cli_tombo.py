@@ -1,4 +1,4 @@
-from cli_guppy import cmd_guppy
+from cli_guppy import cmd_guppy, cmd_docker
 
 
 def cmd_multi_to_single(fast5_dir, single=True):
@@ -45,6 +45,7 @@ if __name__ == '__main__':
         guppy_config = r'res_dna_r941_min_modbases-all-context_v001.cfg'
         # guppy_bin = r'/usr/bin/guppy_basecall_server'
 
+    print(cmd_docker(), '\n')
     print(cmd_guppy(fast5_dir, guppy_config, rerio_models), '\n')
     print(cmd_multi_to_single(fast5_dir), '\n')
     print(cmd_resquigle(fast5_dir, reference_genome), ' \n')

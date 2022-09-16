@@ -1,3 +1,11 @@
+def cmd_docker():
+    image = rf'nanopore:0.1'
+    data_dir = rf'/media/noort/Data/users/noort/20220816_1950_MN30914_AJF795_9344cc69'
+    # cmd = [rf'docker run --name box -it {image} /bin/bash']
+    cmd = [rf'docker run -it --mount src={data_dir},target=/home/data,type=bind {image} sh']
+    return ' \\\n'.join(cmd)
+
+
 def cmd_guppy(fast5_dir, guppy_config, rerio_models):
     cmd = [rf'guppy_basecaller']
     cmd.append(rf'-i {fast5_dir}')
@@ -23,4 +31,5 @@ if __name__ == '__main__':
         guppy_config = r'res_dna_r941_min_modbases-all-context_v001.cfg'
         # guppy_bin = r'/usr/bin/guppy_basecall_server'
 
+    print(cmd_docker(), '\n')
     print(cmd_guppy(fast5_dir, guppy_config, rerio_models), '\n')
