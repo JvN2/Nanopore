@@ -31,7 +31,7 @@ def cmd_detect_mods(fast5_dir, model='alternative'):
 
 
 if __name__ == '__main__':
-    config = 'local'
+    config = 'docker'
     if config == 'local':
         fast5_dir = r'/media/noort/Data/users/noort/Analysed_2022-01-18_12samplemethylationtest/tombo/barcode03'
         rerio_models = r'/home/noort/Downloads/rerio-master/basecall_models/'
