@@ -10,9 +10,10 @@ def cmd_multi_to_single(fast5_dir, single=True):
 
 
 def cmd_resquigle(fast5_dir, reference_genome):
-    cmd = [rf'tombo resquiggle {fast5_dir}/tombo {reference_genome}']
+    cmd = [rf'tombo resquiggle {fast5_dir}/tombo/ {reference_genome}']
     cmd.append(rf'--num-most-common-errors 5')
     cmd.append(rf'--overwrite')
+    cmd.append(rf'--processes 18')
     cmd.append(rf'--skip-index')
     return ' \\\n'.join(cmd)
 
@@ -26,21 +27,21 @@ def cmd_detect_mods(fast5_dir, model='alternative'):
     cmd.append(rf'--statistics-file-basename stats')
     cmd.append(rf'--per-read-statistics-basename read_stats')
     cmd.append(rf'--processes 18')
-    cmd.append(rf'--fast5-basedirs {fast5_dir}')
+    cmd.append(rf'--fast5-basedirs {fast5_dir}/tombo')
     return ' \\\n'.join(cmd)
-
 
 if __name__ == '__main__':
     config = 'docker'
+    local_base_folder = rf'/media/noort/Data/users/noort/20220816_barcode07_selection'
     if config == 'local':
-        fast5_dir = r'/media/noort/Data/users/noort/Analysed_2022-01-18_12samplemethylationtest/tombo/barcode03'
+        fast5_dir = local_base_folder
         rerio_models = r'/home/noort/Downloads/rerio-master/basecall_models/'
-        reference_genome = r'/media/noort/Data/users/noort/ref_files/combined.fa'
+        reference_genome = local_base_folder + r'/LinearReference115_130.fasta'
         guppy_config = r'res_dna_r941_min_modbases-all-context_v001.cfg'
         # guppy_bin = r'/opt/ont/guppy/bin/guppy_basecall_server'
     else:
-        fast5_dir = r'/home/data/'
-        reference_genome = r'/home/data/combined.fasta'
+        fast5_dir = r'/home/data'
+        reference_genome = r'/home/data/LinearReference_CP130.fasta'
         rerio_models = r'/home/rerio/basecall_models/'
         guppy_config = r'res_dna_r941_min_modbases-all-context_v001.cfg'
         # guppy_bin = r'/usr/bin/guppy_basecall_server'
@@ -50,3 +51,4 @@ if __name__ == '__main__':
     print(cmd_multi_to_single(fast5_dir), '\n')
     print(cmd_resquigle(fast5_dir, reference_genome), ' \n')
     print(cmd_detect_mods(fast5_dir), '\n')
+    print(cmd_plot_stats(fast5_dir), '\n')

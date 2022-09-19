@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import nuc_tool as nt
 
 
 def vanderlick(Energy, mu, convolve = True):

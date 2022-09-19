@@ -58,6 +58,7 @@ def SaveSequence(dna, filename):
     return
 
 def base2index(base):
+    i=0
     if base=='A':
         i = 0
     if base=='C':

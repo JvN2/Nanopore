@@ -33,7 +33,7 @@ if __name__ == '__main__':
         guppy_bin = r'/opt/ont/guppy/bin/guppy_basecall_server'
     else:
         fast5_dir = r'/home/data/'
-        reference_genome = r'/home/data/combined.fa'
+        reference_genome = r'/home/data/LinearReference_CP130.fasta'
         rerio_models = r'/home/rerio/basecall_models/'
         guppy_config = r'res_dna_r941_min_modbases-all-context_v001.cfg'
         guppy_bin = r'/usr/bin/guppy_basecall_server'
