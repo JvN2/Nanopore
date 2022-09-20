@@ -1,4 +1,5 @@
-ADD file:40290d9a94ae76c35ab1f57178130ce1c5b976e34a91e77472ecf7e945ab64f9 in /
+#ADD file:40290d9a94ae76c35ab1f57178130ce1c5b976e34a91e77472ecf7e945ab64f9 in /
+FROM ubuntu:16.04
 CMD ["bash"]
 WORKDIR /usr/local/bin
 

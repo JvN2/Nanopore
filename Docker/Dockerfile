@@ -15,10 +15,15 @@ MAINTAINER jvn2 <noort@physics.leidenuniv.nl>
 ARG GUPPY_VERSION=5.0.7
 # ARG MEGALODON_VERSION=2.3.5
 ARG MEGALODON_VERSION=2.4.1
-ARG CONDA_VERSION=py38_4.9.2
-ARG SAMTOOLS_VERSION=1.11
+
+#ARG CONDA_VERSION=py38_4.9.2
 ARG CONDA_MD5=122c8c9beb51e124ab32a0fa6426c656
-# ARG TOMBO_VERSION=1.5.1
+
+ARG CONDA_VERSION=py37_4.11.0
+
+ARG SAMTOOLS_VERSION=1.11
+
+ARG TOMBO_VERSION=1.5.1
 
 WORKDIR /home
 
@@ -50,22 +55,29 @@ RUN apt-get update -y && \
                         libboost-log1.58.0 \
                         libboost-iostreams1.58.0 \
                         build-essential \
-                        git &&\
+                        git \
+                        libgl1-mesa-glx
 
-    wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -O miniconda.sh && \
-    echo "${CONDA_MD5}  miniconda.sh" > miniconda.md5 && \
-    if ! md5sum --status -c miniconda.md5; then exit 1; fi && \
-    mkdir -p /opt && \
-    sh miniconda.sh -b -p /opt/conda && \
-    rm miniconda.sh miniconda.md5 && \
-    ln -s /opt/conda/etc/profile.d/conda.sh /etc/profile.d/conda.sh && \
-    echo ". /opt/conda/etc/profile.d/conda.sh" >> ~/.bashrc && \
-    echo "conda activate base" >> ~/.bashrc && \
-    find /opt/conda/ -follow -type f -name '*.a' -delete && \
-    find /opt/conda/ -follow -type f -name '*.js.map' -delete && \
-    /opt/conda/bin/conda clean -afy && \
 
-    cd /tmp &&\
+#RUN /bin/sh -c apt-get update && apt-get install -y     build-essential     zlib1g     zlib1g-dev     git     perl     python-pip     make     vim     wget     gcc     g++     perl     zip     gzip     gawk # buildkit
+#RUN /bin/sh -c apt-get update && apt-get install -y bzip2 wget libgl1-mesa-glx git
+RUN wget https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh
+RUN bash Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh -b -p miniconda3 # buildkit
+ENV PATH=/usr/local/bin/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV HDF5_PLUGIN_PATH=/usr/local/bin/miniconda3/hdf5/lib/plugin
+
+RUN /bin/sh -c conda config --add channels defaults && \
+    conda config --add channels conda-forge && \
+    conda config --add channels bioconda && \
+    conda config --add channels anaconda # buildkit
+RUN /bin/sh -c conda install -c bioconda ont-tombo # buildkit
+RUN /bin/sh -c conda install -c bioconda ont_vbz_hdf_plugin # buildkit
+RUN /bin/sh -c conda install -c bioconda meme # buildkit
+RUN /bin/sh -c pip install "numpy<1.20" # buildkit
+RUN /bin/sh -c pip install ont-fast5-api # buildkit
+RUN /bin/sh -c ln -s /usr/local/bin/miniconda3/bin/* /usr/local/bin # buildkit
+
+RUN cd /tmp &&\
     wget -q https://mirror.oxfordnanoportal.com/software/analysis/ont_guppy_cpu_${GUPPY_VERSION}-1~xenial_amd64.deb && \
     dpkg -i /tmp/ont_guppy_cpu_${GUPPY_VERSION}-1~xenial_amd64.deb && \
     rm *.deb && \
@@ -74,7 +86,7 @@ RUN apt-get update -y && \
     pip3 install pysam==0.18.0 && \
     pip3 install numpy cython ont_pyguppy_client_lib==${GUPPY_VERSION} && \
     pip3 install megalodon==${MEGALODON_VERSION} && \
-#    pip3 install ont-tombo==${TOMBO_VERSION} && \
+    pip3 install ont-tombo==${TOMBO_VERSION} && \
 
     #install samtools so megalodon works with --sort-mappings
     wget https://github.com/samtools/samtools/releases/download/${SAMTOOLS_VERSION}/samtools-${SAMTOOLS_VERSION}.tar.bz2 && \
@@ -103,15 +115,6 @@ RUN apt-get update -y && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-RUN /bin/sh -c conda config --add channels defaults && \
-    conda config --add channels conda-forge && \
-    conda config --add channels bioconda && \
-    conda config --add channels anaconda # buildkit
-RUN /bin/sh -c conda install -c bioconda ont-tombo # buildkit
-RUN /bin/sh -c conda install -c bioconda ont_vbz_hdf_plugin # buildkit
-RUN /bin/sh -c conda install -c bioconda meme # buildkit
-RUN /bin/sh -c pip install "numpy<1.20" # buildkit
-RUN /bin/sh -c pip install ont-fast5-api # buildkit
-RUN /bin/sh -c ln -s /usr/local/bin/miniconda3/bin/* /usr/local/bin # buildkit
 
-CMD ["echo", "Image created, YEAH!"]
+
+CMD ["echo", "Image created"]
