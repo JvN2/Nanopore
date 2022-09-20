@@ -10,7 +10,7 @@ docker build -t jvn2/nanopore:0.1 .
 # use in command prompt (after installation of docker)
 # adjust path of src to folder containing data files
 docker run -it --mount src=SOURCEDIR,target=/home/data,type=bind nanopore:0.1 sh
-docker run -it --mount src=/media/noort/Data/users/noort/20220816_barcode08_selection,target=/home/data,type=bind jvn2/nanopore:0.1 sh
+docker run -it --mount src=/media/noort/Data/users/kuijntjes/2022-08-16_RecsInAmsterdam_BandsOnGel/CP115_CP130_reconstitutions_methylations/20220816_1950_MN30914_AJF795_9344cc69/fast5_pass/barcode09,target=/home/data,type=bind jvn2/nanopore:0.1 sh
 docker run -it --mount src=/media/noort/Data/users/noort/20220816_barcode08_selection,target=/home/data,type=bind sidizhao/tombo sh
 #docker run -it --mount src=/media/noort/Data/users/noort/20220816_barcode08_selection,target=/home/data,type=bind robegan21/megalodon:latest sh
 

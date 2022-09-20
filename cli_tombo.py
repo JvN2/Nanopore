@@ -51,4 +51,3 @@ if __name__ == '__main__':
     print(cmd_multi_to_single(fast5_dir), '\n')
     print(cmd_resquigle(fast5_dir, reference_genome), ' \n')
     print(cmd_detect_mods(fast5_dir), '\n')
-    print(cmd_plot_stats(fast5_dir), '\n')
