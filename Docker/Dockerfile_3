@@ -1,0 +1,24 @@
+ADD file:40290d9a94ae76c35ab1f57178130ce1c5b976e34a91e77472ecf7e945ab64f9 in /
+CMD ["bash"]
+WORKDIR /usr/local/bin
+
+RUN /bin/sh -c apt-get update && apt-get install -y     build-essential     zlib1g     zlib1g-dev     git     perl     python-pip     make     vim     wget     gcc     g++     perl     zip     gzip     gawk # buildkit
+RUN /bin/sh -c apt-get update && apt-get install -y bzip2 wget libgl1-mesa-glx git && \
+    wget https://repo.anaconda.com/miniconda/Miniconda3-py37_4.11.0-Linux-x86_64.sh  && \
+    bash Miniconda3-py37_4.11.0-Linux-x86_64.sh -b -p miniconda3 # buildkit
+
+ENV PATH=/usr/local/bin/miniconda3/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ENV HDF5_PLUGIN_PATH=/usr/local/bin/miniconda3/hdf5/lib/plugin
+
+RUN /bin/sh -c conda config --add channels defaults && \
+    conda config --add channels conda-forge && \
+    conda config --add channels bioconda && \
+    conda config --add channels anaconda # buildkit
+RUN /bin/sh -c conda install -c bioconda ont-tombo # buildkit
+RUN /bin/sh -c conda install -c bioconda ont_vbz_hdf_plugin # buildkit
+RUN /bin/sh -c conda install -c bioconda meme # buildkit
+RUN /bin/sh -c pip install "numpy<1.20" # buildkit
+RUN /bin/sh -c pip install ont-fast5-api # buildkit
+RUN /bin/sh -c ln -s /usr/local/bin/miniconda3/bin/* /usr/local/bin # buildkit
+
+CMD ["echo", "New image created"]

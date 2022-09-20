@@ -14,6 +14,9 @@ docker run -it --mount src=/media/noort/Data/users/kuijntjes/2022-08-16_RecsInAm
 docker run -it --mount src=/media/noort/Data/users/noort/20220816_barcode08_selection,target=/home/data,type=bind sidizhao/tombo sh
 #docker run -it --mount src=/media/noort/Data/users/noort/20220816_barcode08_selection,target=/home/data,type=bind robegan21/megalodon:latest sh
 
+docker save sidizhao/tombo | gzip > sidizhao_tombo.tar.gz
+docker import image sidizhao/tombo
+
 # to see what was run in the past:
 docker ps -a
 

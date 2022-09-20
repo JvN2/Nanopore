@@ -38,8 +38,8 @@ def read_stats(filename, seq, length=0, add_nuc=True):
     return np.asarray(result)
 
 
-filename = r'/media/noort/Data/users/noort/20220816_barcode10_selection/read_stats.5mC.tombo.per_read_stats'
-fasta = r'/media/noort/Data/users/noort/20220816_barcode08_selection/LinearReference_CP130.fasta'
+filename = r'/media/noort/Data/users/kuijntjes/20220816_barcode10_selection/read_stats.5mC.tombo.per_read_stats'
+fasta = r'/media/noort/Data/users/kuijntjes/20220816_barcode08_selection/LinearReference_CP130.fasta'
 
 seq = read_fasta(fasta).upper()
 

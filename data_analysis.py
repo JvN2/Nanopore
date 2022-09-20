@@ -1,4 +1,4 @@
-from Bio import SeqIO
+#from Bio import SeqIO
 import numpy as np
 
 def phred_to_quality(phred):
