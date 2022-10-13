@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import tqdm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from nuc_tool import CalcNucPositions
 from pathlib import Path
@@ -17,7 +18,86 @@ def read_fasta(filename, name=None):
                 return (seq)
 
 
+def test(seq):
+    import tombo.tombo_stats
+
+    modelfile = '/home/noort/anaconda3/lib/python3.9/site-packages/tombo/tombo_models/tombo.DNA.5mC.model'
+    modelfile = 'https://github.com/nanoporetech/kmer_models/blob/master/r9.4_180mv_450bps_6mer/template_median68pA.model'
+    modelfile = '/home/noort/PycharmProjects/Nanopore/temp/r9.4_180mv_450bps_6mer.model'
+    model = tombo.tombo_stats.TomboModel(modelfile, is_text_model=True)
+    mean, sd = model.get_exp_levels_from_seq(seq[:-1])
+    return ((mean - np.mean(mean))/np.std(mean))
+
+
+def read_squiggles(filename, fasta):
+    import glob
+    from ont_fast5_api.fast5_file import Fast5File
+    path = str(Path(filename).parent) + r'/tombo/0/*.fast5'
+    files = glob.glob(path)
+
+    seq = read_fasta(fasta).upper()
+    ref = test(seq)
+
+    index601 = find_motif(seq, seq601, format='index')
+    seq = find_motif(seq, seq601, format='string')
+    xlabels = [s + f'\n:\n{i}' if i % 10 == 0 else s for i, s in enumerate(seq)]
+    i = index601[3]
+    linkerlength = 25
+    plotrange = [-linkerlength, 147 + linkerlength]
+    xlabels = xlabels[i + plotrange[0]: i + plotrange[1]]
+
+    squigles = []
+    for f in tqdm.tqdm(files[:500]):
+        squigle = np.empty(len(seq))
+        squigle[:] = np.nan
+        try:
+            df = pd.read_hdf(f, key=f'Analyses/RawGenomeCorrected_000/BaseCalled_template/Events')
+            with Fast5File(f, mode="r") as f5:
+                strand = dict(f5.get_analysis_attributes(r'RawGenomeCorrected_000/BaseCalled_template/Alignment'))[
+                    'mapped_strand']
+                offset = dict(f5.get_analysis_attributes(r'RawGenomeCorrected_000/BaseCalled_template/Alignment'))[
+                    'mapped_start']
+                df.index += offset
+            squigle[df.index] = df['norm_mean']
+            if strand == '+':
+                squigles.append(squigle)
+        except KeyError:
+            pass
+
+    squigles = np.asarray(squigles)
+    subsquigle = squigles[:, i + plotrange[0]: i + plotrange[1]]
+    mask = ~np.isnan(subsquigle)
+    subsquigle = [d[m] for d, m in zip(subsquigle.T, mask.T)]
+
+
+    plt.figure(figsize=(25, 2))
+    title = filename.split(r'/')[-2] + f'\n\n{label}'
+    plt.text(0, 1.0, title, horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes)
+
+    violin_parts = plt.violinplot(subsquigle, showextrema=False)
+    for pc in violin_parts['bodies']:
+        pc.set_facecolor('red')
+        pc.set_edgecolor('black')
+
+    plt.xticks(np.arange(len(xlabels)) + 1, xlabels)
+    plt.ylim((-5, 5))
+    plt.ylabel(f'norm_mean')
+    plt.tight_layout()
+
+    i -=2
+    x =  np.arange(len(ref))[i + plotrange[0]: i + plotrange[1]]
+    x -= np.min(x)
+#    x = np.asarray(x).astype(float) + 0.5
+    ref *=1.3
+    plt.scatter(x+1, ref[i + plotrange[0]: i + plotrange[1]], marker = "_", color = 'k') #s=25, facecolors='none', edgecolors='k', linewidths=1)
+    plt.savefig(filename.replace('.tombo.per_read_stats', '_squigle.jpg'), dpi=1200)
+    plt.show()
+
+    return
+
+
 def read_stats(filename, seq, length=0, range=None, motifs=None):
+    print(filename)
     strands = [1, 0]
     result = []
     strand = []
@@ -123,14 +203,15 @@ def create_plots(filename, fasta, seq601, label='', type='mean'):
         plt.xlabel('i')
     elif type == 'motif':
         import matplotlib.patches as mpatches
+
         index601 = find_motif(seq, seq601, format='index')
         seq = find_motif(seq, seq601, format='string')
+        xlabels = [s + f'\n:\n{i}' if i % 10 == 0 else s for i, s in enumerate(seq)]
 
-        i = index601[5]
+        i = index601[3]
         linkerlength = 25
         plotrange = [-linkerlength, 147 + linkerlength]
-        subseq = seq[i + plotrange[0]: i + plotrange[1]]
-        baseindex = np.asarray(range(len(subseq))) + 1
+        xlabels = xlabels[i + plotrange[0]: i + plotrange[1]]
 
         labels = []
         for s, color in enumerate(['red', 'blue']):
@@ -143,9 +224,10 @@ def create_plots(filename, fasta, seq601, label='', type='mean'):
             labels.append((mpatches.Patch(color=color), f'strand {s}'))
 
         plt.legend(*zip(*labels), loc=2)
-        plt.xticks(baseindex, subseq)
+        plt.xticks(np.arange(len(xlabels)) + 1, xlabels)
         plt.ylim((-10, 10))
-        plt.ylabel(f'LLR')
+        plt.ylabel(f'-LLR')
+        plt.tight_layout()
     else:
         im = ax.imshow(-llr, cmap='bwr', vmin=-colorrange, vmax=colorrange, origin='lower')
         plt.ylabel(f'molecule#')
@@ -160,7 +242,7 @@ def create_plots(filename, fasta, seq601, label='', type='mean'):
     plt.show()
 
 
-def show_squigle(filename):
+def show_squigle(filename, fasta):
     import hdf5plugin
     import tombo
     def printall(name, obj):
@@ -223,7 +305,7 @@ def sort_traces(traces, strands, method='sum'):
 
 
 if __name__ == '__main__':
-    barcode = 8
+    barcode = 10
     experiment = r'/media/noort/Data/users/noort/20220816_1950_MN30914_AJF795_9344cc69/sample_description.xlsx'
     tombo_filename = fr'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/read_stats.MOD.tombo.per_read_stats'
     fasta = rf'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/LinearReference_CP130.fasta'
@@ -238,4 +320,5 @@ if __name__ == '__main__':
     print(df)
 
     for mod in mods:
-        create_plots(tombo_filename.replace('MOD', mod), fasta, seq601, label, type='motif')
+        #        create_plots(tombo_filename.replace('MOD', mod), fasta, seq601, label, type='motif')
+        read_squiggles(tombo_filename, fasta)
