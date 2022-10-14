@@ -18,15 +18,15 @@ def read_fasta(filename, name=None):
                 return (seq)
 
 
-def test(seq):
+def read_model(seq):
     import tombo.tombo_stats
-
+    seq = ''.join([s for s in seq.upper() if s in ['A', 'C', 'G', 'T']])
     modelfile = '/home/noort/anaconda3/lib/python3.9/site-packages/tombo/tombo_models/tombo.DNA.5mC.model'
-    modelfile = 'https://github.com/nanoporetech/kmer_models/blob/master/r9.4_180mv_450bps_6mer/template_median68pA.model'
+    #modelfile = 'https://github.com/nanoporetech/kmer_models/blob/master/r9.4_180mv_450bps_6mer/template_median68pA.model'
     modelfile = '/home/noort/PycharmProjects/Nanopore/temp/r9.4_180mv_450bps_6mer.model'
     model = tombo.tombo_stats.TomboModel(modelfile, is_text_model=True)
-    mean, sd = model.get_exp_levels_from_seq(seq[:-1])
-    return ((mean - np.mean(mean))/np.std(mean))
+    mean, sd = model.get_exp_levels_from_seq(seq)
+    return mean
 
 
 def read_squiggles(filename, fasta):
@@ -36,10 +36,9 @@ def read_squiggles(filename, fasta):
     files = glob.glob(path)
 
     seq = read_fasta(fasta).upper()
-    ref = test(seq)
-
     index601 = find_motif(seq, seq601, format='index')
     seq = find_motif(seq, seq601, format='string')
+
     xlabels = [s + f'\n:\n{i}' if i % 10 == 0 else s for i, s in enumerate(seq)]
     i = index601[3]
     linkerlength = 25
@@ -69,7 +68,6 @@ def read_squiggles(filename, fasta):
     mask = ~np.isnan(subsquigle)
     subsquigle = [d[m] for d, m in zip(subsquigle.T, mask.T)]
 
-
     plt.figure(figsize=(25, 2))
     title = filename.split(r'/')[-2] + f'\n\n{label}'
     plt.text(0, 1.0, title, horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes)
@@ -81,16 +79,29 @@ def read_squiggles(filename, fasta):
 
     plt.xticks(np.arange(len(xlabels)) + 1, xlabels)
     plt.ylim((-5, 5))
-    plt.ylabel(f'norm_mean')
+    plt.ylabel(r'nomalized current')
     plt.tight_layout()
 
+
+    ref = read_model(seq)
     i -=2
     x =  np.arange(len(ref))[i + plotrange[0]: i + plotrange[1]]
     x -= np.min(x)
-#    x = np.asarray(x).astype(float) + 0.5
-    ref *=1.3
-    plt.scatter(x+1, ref[i + plotrange[0]: i + plotrange[1]], marker = "_", color = 'k') #s=25, facecolors='none', edgecolors='k', linewidths=1)
-    plt.savefig(filename.replace('.tombo.per_read_stats', '_squigle.jpg'), dpi=1200)
+
+    median_squigle = []
+    for s in squigles.T:
+        try:
+            median_squigle.append(np.median(s[~np.isnan(s)]))
+        except FloatingPointError:
+            median_squigle.append(np.nan)
+    median_squigle = np.asarray(median_squigle[2:len(ref)+2])
+
+    fit = np.polyfit( ref, median_squigle, 1)
+    ref = np.polyval(fit, ref)
+
+    plt.scatter(x+1, ref[i + plotrange[0]: i + plotrange[1]], marker = "_", color = 'k', linewidths=0.75)
+    plt.scatter(x+1, median_squigle[i + plotrange[0]: i + plotrange[1]], marker = "_", color = 'r', linewidths=0.75)
+    plt.savefig(filename.replace('MOD.tombo.per_read_stats', 'squigle.jpg'), dpi=1200)
     plt.show()
 
     return
@@ -312,8 +323,6 @@ if __name__ == '__main__':
     seq601 = 'CTGGAGAATCCCGGTGCCGAGGCCGCTCAATTGGTCGTAGCAAGCTCTAGCACCGCTTAAACGCACGTACGCGCTGTCCCCCGCGTTTTAACCGCCAAGGGGATTACTCCCTAGTCTCCAGGCACGTGTCAGATATATACATCCTGT'
     mods = ['6mA', '5mC']
     fast5_filename = r'/media/noort/Data/users/noort/20220816_barcode08_selection/tombo/0/0bc22d60-5c34-48c6-9cfd-163aa82be630.fast5'
-    # read_tombo(fast5_filename, fasta)
-    # breakpoint()
 
     df = pd.read_excel(experiment, index_col='Barcode')
     label = df.at[barcode, 'Enzymes']
