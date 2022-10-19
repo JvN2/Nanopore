@@ -18,14 +18,30 @@ def read_fasta(filename, name=None):
                 return (seq)
 
 
-def read_model(seq):
+def conjugate_strand(watson, reverse=True):
+    conjugate = {'A': 'T', 'C': 'G', 'G': 'C', 'T': 'A'}
+    crick = ''.join([conjugate[base] for base in watson.upper()])
+    if not reverse:
+        return crick
+    else:
+        return crick[::-1]
+
+
+def read_model(seq, strand='+'):
     import tombo.tombo_stats
     seq = ''.join([s for s in seq.upper() if s in ['A', 'C', 'G', 'T']])
+
     modelfile = '/home/noort/anaconda3/lib/python3.9/site-packages/tombo/tombo_models/tombo.DNA.5mC.model'
-    #modelfile = 'https://github.com/nanoporetech/kmer_models/blob/master/r9.4_180mv_450bps_6mer/template_median68pA.model'
+    # modelfile = 'https://github.com/nanoporetech/kmer_models/blob/master/r9.4_180mv_450bps_6mer/template_median68pA.model'
     modelfile = '/home/noort/PycharmProjects/Nanopore/temp/r9.4_180mv_450bps_6mer.model'
+
     model = tombo.tombo_stats.TomboModel(modelfile, is_text_model=True)
-    mean, sd = model.get_exp_levels_from_seq(seq)
+    if strand == '+':
+        mean, sd = model.get_exp_levels_from_seq(seq)
+    if strand == '-':
+        seq = conjugate_strand(seq)
+        mean, sd = model.get_exp_levels_from_seq(seq)
+        mean = np.roll(mean[::-1], 1)
     return mean
 
 
@@ -45,65 +61,77 @@ def read_squiggles(filename, fasta):
     plotrange = [-linkerlength, 147 + linkerlength]
     xlabels = xlabels[i + plotrange[0]: i + plotrange[1]]
 
-    squigles = []
+    plus_squigles = []
+    min_squigles = []
     for f in tqdm.tqdm(files[:500]):
         squigle = np.empty(len(seq))
         squigle[:] = np.nan
         try:
             df = pd.read_hdf(f, key=f'Analyses/RawGenomeCorrected_000/BaseCalled_template/Events')
             with Fast5File(f, mode="r") as f5:
-                strand = dict(f5.get_analysis_attributes(r'RawGenomeCorrected_000/BaseCalled_template/Alignment'))[
+                read_strand = dict(f5.get_analysis_attributes(r'RawGenomeCorrected_000/BaseCalled_template/Alignment'))[
                     'mapped_strand']
                 offset = dict(f5.get_analysis_attributes(r'RawGenomeCorrected_000/BaseCalled_template/Alignment'))[
                     'mapped_start']
-                df.index += offset
+            df.index += offset
             squigle[df.index] = df['norm_mean']
-            if strand == '+':
-                squigles.append(squigle)
+            if read_strand == '+':
+                plus_squigles.append(squigle)
+            else:
+                min_squigles.append(squigle[::-1])
         except KeyError:
             pass
 
-    squigles = np.asarray(squigles)
-    subsquigle = squigles[:, i + plotrange[0]: i + plotrange[1]]
-    mask = ~np.isnan(subsquigle)
-    subsquigle = [d[m] for d, m in zip(subsquigle.T, mask.T)]
+    for strand, color, squigles in zip(['+', '-'], ['red', 'green'], [plus_squigles, min_squigles]):
+        fig = plt.figure(figsize=(25, 3))
+        plt.tight_layout()
+        plt.xticks(np.arange(len(xlabels)) + 1, xlabels)
+        plt.ylim((-5, 5))
+        plt.ylabel(r'nomalized current')
+        fig.subplots_adjust(bottom=0.2, top=0.8, left=0.05, right=0.98)
+        title = filename.split(r'/')[-2] + f'\n\n{label}'
+        plt.text(0, 1.0, title, horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes)
+        squigles = np.asarray(squigles)
+        subsquigle = squigles[:, i + plotrange[0]: i + plotrange[1]]
+        mask = ~np.isnan(subsquigle)
+        subsquigle = [d[m] for d, m in zip(subsquigle.T, mask.T)]
 
-    plt.figure(figsize=(25, 2))
-    title = filename.split(r'/')[-2] + f'\n\n{label}'
-    plt.text(0, 1.0, title, horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes)
+        violin_parts = plt.violinplot(subsquigle, showextrema=False)
+        for pc in violin_parts['bodies']:
+            pc.set_facecolor(color)
+            pc.set_edgecolor('black')
 
-    violin_parts = plt.violinplot(subsquigle, showextrema=False)
-    for pc in violin_parts['bodies']:
-        pc.set_facecolor('red')
-        pc.set_edgecolor('black')
+        ref = read_model(seq, strand)
 
-    plt.xticks(np.arange(len(xlabels)) + 1, xlabels)
-    plt.ylim((-5, 5))
-    plt.ylabel(r'nomalized current')
-    plt.tight_layout()
+        i -= 2
+        x = np.arange(len(ref))[i + plotrange[0]: i + plotrange[1]]
+        x -= np.min(x) - 1
 
+        median_squigle = []
+        for s in squigles.T:
+            try:
+                median_squigle.append(np.median(s[~np.isnan(s)]))
+            except FloatingPointError:
+                median_squigle.append(np.nan)
+        median_squigle = np.asarray(median_squigle[2:len(ref) + 2])
 
-    ref = read_model(seq)
-    i -=2
-    x =  np.arange(len(ref))[i + plotrange[0]: i + plotrange[1]]
-    x -= np.min(x)
+        #    fit = np.polyfit( ref, median_squigle, 1)
+        #    print(fit)
+        fit = [0.10309092, -9.42492226]
+        ref = np.polyval(fit, ref)
 
-    median_squigle = []
-    for s in squigles.T:
-        try:
-            median_squigle.append(np.median(s[~np.isnan(s)]))
-        except FloatingPointError:
-            median_squigle.append(np.nan)
-    median_squigle = np.asarray(median_squigle[2:len(ref)+2])
+        plt.text(0.95, 0.95, 'model', horizontalalignment='right', verticalalignment='top',
+                 transform=plt.gca().transAxes)
+        plt.text(0.95, 0.95, f'\n{strand} strand', horizontalalignment='right', verticalalignment='top',
+                 transform=plt.gca().transAxes, color=color)
 
-    fit = np.polyfit( ref, median_squigle, 1)
-    ref = np.polyval(fit, ref)
+        width = 1.5
+        plt.scatter(x, ref[i + plotrange[0]: i + plotrange[1]], marker="_", color='k', linewidths=width)
+        plt.scatter(x, median_squigle[i + plotrange[0]: i + plotrange[1]], marker="_", color=color, linewidths=width)
+        plt.savefig(filename.replace('MOD.tombo.per_read_stats', f'squigle{strand}.jpg'), dpi=1200)
+        plt.close()
 
-    plt.scatter(x+1, ref[i + plotrange[0]: i + plotrange[1]], marker = "_", color = 'k', linewidths=0.75)
-    plt.scatter(x+1, median_squigle[i + plotrange[0]: i + plotrange[1]], marker = "_", color = 'r', linewidths=0.75)
-    plt.savefig(filename.replace('MOD.tombo.per_read_stats', 'squigle.jpg'), dpi=1200)
     plt.show()
-
     return
 
 
@@ -316,7 +344,7 @@ def sort_traces(traces, strands, method='sum'):
 
 
 if __name__ == '__main__':
-    barcode = 10
+    barcode = 8
     experiment = r'/media/noort/Data/users/noort/20220816_1950_MN30914_AJF795_9344cc69/sample_description.xlsx'
     tombo_filename = fr'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/read_stats.MOD.tombo.per_read_stats'
     fasta = rf'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/LinearReference_CP130.fasta'
@@ -328,6 +356,6 @@ if __name__ == '__main__':
     label = df.at[barcode, 'Enzymes']
     print(df)
 
-    for mod in mods:
+    for mod in mods[:1]:
         #        create_plots(tombo_filename.replace('MOD', mod), fasta, seq601, label, type='motif')
         read_squiggles(tombo_filename, fasta)
