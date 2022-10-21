@@ -87,7 +87,7 @@ def read_squiggles(filename, fasta):
                 ref = read_model(seq.upper(), '-')
                 try:
                     fit = np.polyfit(ref[~np.isnan(squigle)], squigle[~np.isnan(squigle)], 1)
-                    if fit[1] < -2 :
+                    if fit[1] < -1 :
                         min_squigles.append(squigle)
                 except np.linalg.LinAlgError:
                     pass
@@ -102,7 +102,7 @@ def read_squiggles(filename, fasta):
     #plt.plot(np.asarray(fits).T)
     #plt.show()
 
-    xlabels = np.asarray([s + f'\n:\n{i}' if i % 10 == 0 else s for i, s in enumerate(seq)])
+    xlabels = np.asarray([s + f'\n:\n{i+1}' if (i+1)%10 == 0 else s for i, s in enumerate(seq)])
     x = np.arange(len(seq))
     i = index601[3]
     linkerlength = 50
@@ -133,9 +133,9 @@ def read_squiggles(filename, fasta):
         fit = [0.10309092, -9.42492226]
         ref = np.polyval(fit, ref)
 
-        plt.text(1, 0.97, f'\nN = {len(cleaned_squigles)}, model ', horizontalalignment='right', verticalalignment='top',
+        plt.text(1, 0.97, f'\nmodel ', horizontalalignment='right', verticalalignment='top',
                  transform=plt.gca().transAxes)
-        plt.text(1, 0.97, f'{strand} strand ', horizontalalignment='right', verticalalignment='top',
+        plt.text(1, 0.97, f'N={len(cleaned_squigles[0])}, {strand} strand ', horizontalalignment='right', verticalalignment='top',
                  transform=plt.gca().transAxes, color=color)
 
         width = 1.5
@@ -363,7 +363,7 @@ def sort_traces(traces, strands, method='sum'):
 
 
 if __name__ == '__main__':
-    barcode = 10
+    barcode = 8
     experiment = r'/media/noort/Data/users/noort/20220816_1950_MN30914_AJF795_9344cc69/sample_description.xlsx'
     tombo_filename = fr'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/read_stats.MOD.tombo.per_read_stats'
     fasta = rf'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/LinearReference_CP130.fasta'
