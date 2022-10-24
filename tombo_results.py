@@ -7,6 +7,7 @@ from nuc_tool import CalcNucPositions
 from pathlib import Path
 from scipy.ndimage import median_filter
 import h5py, re
+from scipy import stats
 
 
 def read_fasta(filename, name=None):
@@ -44,6 +45,16 @@ def read_model(seq, strand='+'):
         squigle[0: len(mean)-6] = mean[::-1][6:]
     return squigle
 
+def cross_correlate(a,b):
+    from scipy import signal
+    a[~np.isfinite(a)] = 0
+    b[~np.isfinite(b)] = 0
+    n = len(a)
+    cc = signal.correlate(b, a, mode='same') / np.sqrt(
+        signal.correlate(a, a, mode='same')[int(n / 2)] * signal.correlate(b, b, mode='same')[int(n / 2)])
+    delay_arr = np.linspace(-0.5*n, 0.5*n, n)
+    delay = delay_arr[np.argmax(cc)]
+    return cc, delay
 
 def read_squiggles(filename, fasta):
     import glob
@@ -61,6 +72,7 @@ def read_squiggles(filename, fasta):
 
     plus_squigles = []
     min_squigles = []
+    min_squigles_quality = []
     for f in tqdm.tqdm(files[:500]):
         squigle = np.empty(len(seq))
         squigle[:] = np.nan
@@ -71,42 +83,41 @@ def read_squiggles(filename, fasta):
                     'mapped_strand']
                 offset = dict(f5.get_analysis_attributes(r'RawGenomeCorrected_000/BaseCalled_template/Alignment'))[
                     'mapped_start']
+
             df.index += offset
             squigle[df.index] = df['norm_mean']
-            if read_strand == '+':
-                plus_squigles.append(squigle)
-                if len(plus_squigles) == display_nr:
-                    ref = read_model(seq.upper(), '+')
-                    fit = np.polyfit(ref[~np.isnan(squigle)], squigle[~np.isnan(squigle)], 1)
-                    plt.plot(np.polyval(fit, ref), color = 'k')
-                    plt.plot(squigle, color = 'r')
-                    plt.title('+ strand')
-                    plt.show()
-            else:
+            if read_strand == '-':
                 squigle = squigle[::-1]
-                ref = read_model(seq.upper(), '-')
-                try:
-                    fit = np.polyfit(ref[~np.isnan(squigle)], squigle[~np.isnan(squigle)], 1)
-                    if fit[1] < -1 :
-                        min_squigles.append(squigle)
-                except np.linalg.LinAlgError:
-                    pass
-                if len(min_squigles) == display_nr:
-                    plt.plot(np.polyval(fit, ref), color = 'k')
-                    plt.plot(squigle, color = 'g')
-                    plt.title('- strand')
-                    plt.show()
+
+            ref = read_model(seq.upper(), read_strand)
+            selection = np.isfinite(ref) * np.isfinite(squigle)
+            fit = np.polyfit(ref[selection], squigle[selection], 1)
+            if fit[0] > 0.05:
+                if read_strand == '+':
+                    plus_squigles.append(squigle)
+                else:
+                    min_squigles.append(squigle)
+            if len(plus_squigles) == display_nr:
+                ref = read_model(seq.upper(), '+')
+                plt.plot(np.polyval(fit, ref), color = 'k')
+                plt.plot(squigle, color = 'r')
+                plt.title('+ strand')
+                plt.show()
+            #cc, shift = cross_correlate(squigle, np.polyval(fit, ref))
+            #min_squigles_quality.append([fit[0], fit[1]])
+
         except KeyError:
             pass
 
-    #plt.plot(np.asarray(fits).T)
+    #min_squigles_quality=np.asarray(min_squigles_quality).T
+    #plt.scatter(min_squigles_quality[0], min_squigles_quality[1])
     #plt.show()
 
     xlabels = np.asarray([s + f'\n:\n{i+1}' if (i+1)%10 == 0 else s for i, s in enumerate(seq)])
     x = np.arange(len(seq))
     i = index601[3]
     linkerlength = 50
-    selection = np.arange(147 + linkerlength) + i #- linkerlength // 2
+    selection = np.arange(147 + linkerlength) + i
 
     for strand, color, squigles in zip(['+', '-'], ['red', 'green'], [plus_squigles, min_squigles]):
         fig = plt.figure(figsize=(25, 3))
@@ -143,8 +154,12 @@ def read_squiggles(filename, fasta):
         plt.scatter(x[selection] + 1 - x[selection][0], median_cleaned_squigles, marker="_", color=color,
                     linewidths=width)
         plt.scatter(x[selection] - x[selection][0]+1, ref[selection+1], marker="_", color='k', linewidths=width)
+
+        # Difference plot
+        plt.plot(x[selection] + 1 - x[selection][0], 0*median_cleaned_squigles - 5, color = 'k', linewidth=0.5)
         plt.scatter(x[selection] + 1 - x[selection][0], ref[selection+1] - median_cleaned_squigles - 5, marker="_",
                     color=color, linewidths=width)
+        plt.text(-1, -5, 'difference',  horizontalalignment='right', verticalalignment='center')
 
         plt.xlim((0, x[selection][-1] - x[selection][0] + 1.5))
         plt.savefig(filename.replace('MOD.tombo.per_read_stats', f'squigle{strand}.jpg'), dpi=1200)
