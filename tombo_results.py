@@ -1,13 +1,15 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import tqdm
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from nuc_tool import CalcNucPositions
 from pathlib import Path
 from scipy.ndimage import median_filter
 import h5py, re
 from scipy import stats
+import re
+import tqdm
+
 
 
 def read_fasta(filename, name=None):
@@ -64,8 +66,8 @@ def read_squiggles(filename, fasta):
     files = glob.glob(path)
 
     seq = read_fasta(fasta)
-    index601 = find_motif(seq, seq601, format='index')
-    seq = find_motif(seq, seq601, format='string')
+    index601 = find_motif(seq, seqGAL, format='index')
+    seq = find_motif(seq, seqGAL, format='string')
 
     fit = [0.10309092, -9.42492226]
     display_nr = -11
@@ -115,23 +117,25 @@ def read_squiggles(filename, fasta):
 
     xlabels = np.asarray([s + f'\n:\n{i+1}' if (i+1)%10 == 0 else s for i, s in enumerate(seq)])
     x = np.arange(len(seq))
-    i = index601[3]
-    linkerlength = 50
-    selection = np.arange(147 + linkerlength) + i
+    print(index601)
+    i = index601[0]
+    linkerlength = 0
+    selection = np.arange(0 + linkerlength) + i
 
     for strand, color, squigles in zip(['+', '-'], ['red', 'green'], [plus_squigles, min_squigles]):
         fig = plt.figure(figsize=(25, 3))
         plt.tight_layout()
-        plt.xticks(x[selection] - x[selection][0] + 1, xlabels[selection])
+        plt.xticks(x[selection], xlabels[selection])
         plt.ylim((-5.5, 5.5))
         plt.ylabel(r'nomalized current')
         fig.subplots_adjust(bottom=0.2, top=0.8, left=0.05, right=0.98)
         title = filename.split(r'/')[-2] + f'\n\n{label}'
         plt.text(0, 1.0, title, horizontalalignment='left', verticalalignment='bottom', transform=plt.gca().transAxes)
         squigles = np.asarray(squigles)
+        print(squigles)
 
         cleaned_squigles = [s[~np.isnan(s)] if len(s[~np.isnan(s)]) > 0 else [-1e6] for s in
-                            squigles[:, selection + 1].T]
+                            squigles[:, selection].T]
 
         violin_parts = plt.violinplot(cleaned_squigles, showextrema=False, widths=0.5)
         for pc in violin_parts['bodies']:
@@ -170,13 +174,12 @@ def read_squiggles(filename, fasta):
 
 
 def read_stats(filename, seq, length=0, range=None, motifs=None):
-    print(filename)
     strands = [1, 0]
     result = []
     strand = []
     for block in strands:
         df = pd.read_hdf(filename, key=f'Statistic_Blocks/Block_{block}/block_stats')
-        for id in df['read_id'].unique():
+        for id in tqdm.tqdm(df['read_id'].unique(), desc=f'Reading strand: {block}'):
             mod = np.zeros((len(seq)))
             df_id = df[df['read_id'] == id]
             mod[np.asarray(df_id['pos'])] = np.asarray(df_id['stat'])
@@ -237,7 +240,7 @@ def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'same') / w
 
 
-def create_plots(filename, fasta, seq601, label='', type='mean'):
+def create_plots(filename, fasta, motif,  label='', type='mean'):
     seq = read_fasta(fasta).upper()
 
     if '5mC' in filename:
@@ -247,7 +250,7 @@ def create_plots(filename, fasta, seq601, label='', type='mean'):
     else:
         motifs = None
 
-    llr, strands = read_stats(filename, seq, length=5800, motifs=motifs)
+    llr, strands = read_stats(filename, seq, length=4000, motifs=motifs)
     llr = sort_traces(llr, strands)
 
     mean_llr = np.mean(llr, axis=0)
@@ -268,7 +271,7 @@ def create_plots(filename, fasta, seq601, label='', type='mean'):
 
     if type == 'mean':
         plt.plot(-mean_llr, linewidth=0, marker='o', color='red', markerfacecolor='none')
-        nucs = find_motif(seq, seq601, format='numeric')
+        nucs = find_motif(seq, motif, format='numeric')
         nucs[-1] = 0
         plt.plot(-1.5 * (nucs - 0.5), color='blue')
         plt.ylabel(f'LLR')
@@ -277,18 +280,16 @@ def create_plots(filename, fasta, seq601, label='', type='mean'):
     elif type == 'motif':
         import matplotlib.patches as mpatches
 
-        index601 = find_motif(seq, seq601, format='index')
-        seq = find_motif(seq, seq601, format='string')
+        index = find_motif(seq, motif, format='index')[0]
+        seq = find_motif(seq, motif, format='string')
         xlabels = [s + f'\n:\n{i}' if i % 10 == 0 else s for i, s in enumerate(seq)]
 
-        i = index601[3]
-        linkerlength = 25
-        plotrange = [-linkerlength, 147 + linkerlength]
-        xlabels = xlabels[i + plotrange[0]: i + plotrange[1]]
+        plotrange= [index, index+len(motif)]
+        xlabels = xlabels[plotrange]
 
         labels = []
         for s, color in enumerate(['red', 'blue']):
-            subllr = llr[strands == s, i + plotrange[0]: i + plotrange[1]]
+            subllr = llr[strands == s, index + plotrange[0]: index + plotrange[1]]
             violin_parts = plt.violinplot(-subllr, showextrema=False)
             for pc in violin_parts['bodies']:
                 pc.set_facecolor(color)
@@ -301,7 +302,7 @@ def create_plots(filename, fasta, seq601, label='', type='mean'):
         plt.ylim((-10, 10))
         plt.ylabel(f'-LLR')
         plt.tight_layout()
-    else:
+    elif type == 'heatmap':
         im = ax.imshow(-llr, cmap='bwr', vmin=-colorrange, vmax=colorrange, origin='lower')
         plt.ylabel(f'molecule#')
         plt.xlim((0, len(seq)))
@@ -310,6 +311,8 @@ def create_plots(filename, fasta, seq601, label='', type='mean'):
         cax = divider.append_axes("right", size="1%", pad=0.1)
         cbar = plt.colorbar(im, cax=cax)
         cbar.set_label('LLR', rotation=270)
+    else:
+        print('Plot type not implemented, choose from [mean, motif, heatmap]')
 
     plt.savefig(filename.replace('.tombo.per_read_stats', '.jpg'), dpi=1200)
     plt.show()
@@ -378,18 +381,21 @@ def sort_traces(traces, strands, method='sum'):
 
 
 if __name__ == '__main__':
-    barcode = 8
-    experiment = r'/media/noort/Data/users/noort/20220816_1950_MN30914_AJF795_9344cc69/sample_description.xlsx'
-    tombo_filename = fr'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/read_stats.MOD.tombo.per_read_stats'
-    fasta = rf'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/LinearReference_CP130.fasta'
-    seq601 = 'CTGGAGAATCCCGGTGCCGAGGCCGCTCAATTGGTCGTAGCAAGCTCTAGCACCGCTTAAACGCACGTACGCGCTGTCCCCCGCGTTTTAACCGCCAAGGGGATTACTCCCTAGTCTCCAGGCACGTGTCAGATATATACATCCTGT'
-    mods = ['6mA', '5mC']
-    fast5_filename = r'/media/noort/Data/users/noort/20220816_barcode08_selection/tombo/0/0bc22d60-5c34-48c6-9cfd-163aa82be630.fast5'
+    barcode = 3
+    directory = r'/home/kuijntjes/Desktop/2022-10-12_WholeCellExtractGalLocusCindy/no_sample/20221012_1615_MN30914_AJA380_b85344d5'
+    experiment = directory+r'/sample_description.xlsx'
+    # tombo_filename = fr'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/read_stats.MOD.tombo.per_read_stats'
+    tombo_filename = directory + fr'/fast5_pass/barcode{barcode:02d}.read_stats.MOD.tombo.per_read_stats'
+    fasta = directory+rf'/LinearGalInplasmid.fasta'
+    # seq601 = 'CTGGAGAATCCCGGTGCCGAGGCCGCTCAATTGGTCGTAGCAAGCTCTAGCACCGCTTAAACGCACGTACGCGCTGTCCCCCGCGTTTTAACCGCCAAGGGGATTACTCCCTAGTCTCCAGGCACGTGTCAGATATATACATCCTGT'
+    seqGAL = 'TCAGGAAAATCTGTAGACAATCTTGGACCCGTAAGTTTCACCGTTTTTCAAGGTTACACAATCTTTCCAGTTCTCTTGATTGATAGCATCAATGTATCTACCAGGCTCAATTGCAAAACCTTGTCTTGCTTCGTAACCAGCAGACAAGAAATCACCGGTATAAAATTGATAAGTTGGCTCTGTACTTAAAACTTCTAATGTAATATTGGAATCGGGATGAAAAGCCTTGACAATAAGCGTCAATTCATTGTTTAGAGTATTGATTTGACTTGGCTTAGCATTTTCATCCACCACAAAACAACAATCAAACTGGGGATTTTTGGGGCCTAAGACCGTTGGCTTTGTAGAGTTAAAGGTAGCAATTTCTCTATCGACGATATTACCCGTAGGAATCATGTTTTTGTCGACATCAACAGATTTTTTTGAACGCACCATAATCTCCGTACCCTCAATAGTGTCTCCATATGGCTTGTTCAGATTGAAATAACTATGATTTGTTAAATTTATTGGCGTCGCTTCACCAGCAGTCAATTTACCTTTATATACCATTTCCAAACTTTTTTGGGCAACGTTCACAGTATACTGTATGGTTACCAATAGATCACCTGGAAATTCGGTGTCCTTCTCATTATCTATCAGCATGTACTCGGCGGTAAAAACATCCTTTGAAGGATTTTGAATGATGGGTCCCAAAAATCTTTTTCTGTGGAAAGAACCGATACTACTATGATTCGCATTAACGCCGTTATTAACGGTTAACTGATAGTCTTTGTTGCATAAACTAAACTTACCCTTCGAAATACGATTAGCATACCTGCCGATCGTGGCGCCTATATAAGCACTATCAGGATTCAAATACCCTTCCTCATTTTCATAGCCAAGAACAACTGATTGTCCGTTCACTTTCAGGTCAACAATGCTGGCGCCCAAATTGGCAAACGTGGCTTGAAATCTGGTGCCGGCACCAATAGTCACAAATCTTGCGTCATAACGCATATCTTCAGCGGAAAATCTGGCCTCGACACCCCTTAACTGGTAACCAAAAGGATTCTCAGTAGTCCATTTCCATAAATCCTTGCAGGAGTCTTCAACCTGCAACTCGGTCTGCCATTTCAGTTCGCGTTTGGCCCTATCTGGTTTAGCCGTCAAGTTCAAAACATCACCTGCTCTTCTGCCCGTAACTTTGTATGGAAGATCAATACCAGAAGCTTTGCAGAATGCATGATAAACTTCAAAAACTGTAGAACCTTTACCGGAACCCAAGTTCCACTCACGACACAAACCTTCATTTTCATTGTAGGCCTCTAGGTATTGCAGGGCTGCAATATGACCTTTTGCTAGATCAACTACGTGGATATAATCCCTGATCGGGGTACCATCTCTGGAATCATAATCGTCTCCGAAGATGTAAAGCTTCTCGCGCCTACCAACAGCTACTTGAGCCATATATGGCAACAAATTGTTTGGTATACCTAGCGGATCTTCTCCGATTAATCCAGAGGGATGTGCGCCAATTGGGTTAAAATAACGCAAGATAGCAAACTTCCAACTTTTTTTGTCGCTATTGTAAAGATCATTCAAGATATTCTCAATGGCGTATTTCGTATGACCATACGGATTAGTAGGCCCTAAGGGACATTCTTCTGGGATAGGAATCATATTTGGGAATCTCGTAGCATCACCATAGACAGTAGCAGAAGATGAAAAAACAAATTTGGAAACGTTGTATTGTTGCATTAACTCTAATAAAACGACAGTTCCCAAAATGTTATTGTGATAGTATCTCAGCGGGATTTGTGTAGATTCACCTACAGCCTTTAAACCAGCAAAGTGAATTACCGAATCAATTTTATATTCTTTGAAAACCTTTTCCAGACCTTTTCGGTCACACAAATCAACCTCATAGAAGGGAATGTGATGCTTGGTCAAGACCTCTAACCTGGCTACAGAATCATAAGTTGAATTCGACAGGTTATCAGCAACAACACAGTCATATCCATTCTCAATTAGCTCTACCACAGTGTGTGAACCAATGTATCCAGCACCACCTGTAACCAAAACAATTTTAGAAGTACTTTCACTTTGTAACTGAGCTGTCATTTATATTGAATTTTCAAAAATTCTTACTTTTTTTTTGGATGGACGCAAAGAAGTTTAATAATCATATTACATGGCATTACCACCATATACATATCCATATCTAATCTTACTTATATGTTGTGGAAATGTAAAGAGCCCCATTATCTTAGCCTAAAAAAACCTTCTCTTTGGAACTTTCAGTAATACGCTTAACTGCTCATTGCTATATTGAAGTACGGATTAGAAGCCGCCGAGCGGGCGACAGCCCTCCGACGGAAGACTCTCCTCCGTGCGTCCTCGTCTTCACCGGTCGCGTTCCTGAAACGCAGATGTGCCTCGCGCCGCACTGCTCCGAACAATAAAGATTCTACAATACTAGCTTTTATGGTTATGAAGAGGAAAAATTGGCAGTAACCTGGCCCCACAAACCTTCAAATTAACGAATCAAATTAACAACCATAGGATGATAATGCGATTAGTTTTTTAGCCTTATTTCTGGGGTAATTAATCAGCGAAGCGATGATTTTTGATCTATTAACAGATATATAAATGGAAAAGCTGCATAACCACTTTAACTAATACTTTCAACATTTTCAGTTTGTATTACTTCTTATTCAAATGTCATAAAAGTATCAACAAAAAATTGTTAATATACCTCTATACTTTAACGTCAAGGAGAAAAAACTATAATGACTAAATCTCATTCAGAAGAAGTGATTGTACCTGAGTTCAATTCTAGCGCAAAGGAATTACCAAGACCATTGGCCGAAAAGTGCCCGAGCATAATTAAGAAATTTATAAGCGCTTATGATGCTAAACCGGATTTTGTTGCTAGATCGCCTGGTAGAGTCAATCTAATTGGTGAACATATTGATTATTGTGACTTCTCGGTTTTACCTTTAGCTATTGATTTTGATATGCTTTGCGCCGTCAAAGTTTTGAACGAGAAAAATCCATCCATTACCTTAATAAATGCTGATCCCAAATTTGCTCAAAGGAAGTTCGATTTGCCGTTGGACGGTTCTTATGTCACAATTGATCCTTCTGTGTCGGACTGGTCTAATTACTTTAAATGTGGTCTCCATGTTGCTCACTCTTTTCTAAAGAAACTTGCACCGGAAAGGTTTGCCAGTGCTCCTCTGGCCGGGCTGCAAGTCTTCTGTGAGGGTGATGTACCAACTGGCAGTGGATTGTCTTCTTCGGCCGCATTCATTTGTGCCGTTGCTTTAGCTGTTGTTAAAGCGAATATGGGCCCTGGTTATCATATGTCCAAGCAAAATTTAATGCGTATTACGGTCGTTGCAGAACATTATGTTGGTGTTAACAATGGCGGTATGGATCAGGCTGCCTCTGTTTGCGGTGAGGAAGATCATGCTCTATACGTTGAGTTCAAACCGCAGTTGAAGGCTACTCCGTTTAAATTTCCGCAATTAAAAAACCATGAAATTAGCTTTGTTATTGCGAACACCCTTGTTGTATCTAACAAGTTTGAAACCGCCCCAACCAACTATAATTTAAGAGTGGTAGAAGTCACTACAGCTGCAAATGTTTTAGCTGCCACGTACGGTGTTGTTTTACTTTCTGGAAAAGAAGGATCGAGCACGAATAAAGGTAATCTAAGAGATTTCATGAACGTTTATTATGCCAGATATCACAACATTTCCACACCCTGGAACGGCGATATTGAATCCGGCATCGAACGGTTAACAAAGATGCTAGTACTAGTTGAAGAGTCTCTCGCCAATAAGAAACAGGGCTTTAGTGTTGACGATGTCGCACAATCCTTGAATTGTTCTCGCGAAGAATTCACAAGAGACTACTTAACAACATCTCCAGTGAGATTTCAAGTCTTAAAGCTATATCAGAGGGCTAAGCATGTGTATTCTGAATCTTTAAGAGTCTTGAAGGCTGTGAAATTAATGACTACAGCGAGCTTTACTGCCGACGAAGACTTTTTCAAGCAATTTGGTGCCTTGATGAACGAGTCTCAAGCTTCTTGCGATAAACTTTACGAATGTTCTTGTCCAGAGATTGACAAAATTTGTTCCATTGCTTTGTCAAATGGATCATATGGTTCCCGTTTGACCGGAGCTGGCTGGGGTGGTTGTACTGTTCACTTGGTTCCAGGGGGCCCAAATGGCAACATAGAAAAGGTAAAAGAAGCCCTTGCCAATGAGTTCTACAAGGTCAAGTACCCTAAGATCACTGATGCTGAGCTAGAAAATGCTATCATCGTCTCTAAACCAGCATTGGGCAGCTGTCTATATGAATTATAA'
+    mods = ['5mC', '6mA']
+    #fast5_filename = directory+r'/fast5_pass/barcode{barcode:02d}/tombo/0/0b1f2bf3-2287-4af9-8dd4-5c26d11269fb'
 
     df = pd.read_excel(experiment, index_col='Barcode')
     label = df.at[barcode, 'Enzymes']
     print(df)
 
-    for mod in mods[:1]:
-        #        create_plots(tombo_filename.replace('MOD', mod), fasta, seq601, label, type='motif')
-        read_squiggles(tombo_filename, fasta)
+    for mod in mods[:-1]:
+        create_plots(tombo_filename.replace('MOD', mod), fasta, seqGAL, label, type='heatmap')
+        # read_squiggles(tombo_filename, fasta)
