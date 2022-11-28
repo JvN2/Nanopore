@@ -382,7 +382,8 @@ def sort_traces(traces, strands, method='sum'):
 
 if __name__ == '__main__':
     barcode = 3
-    directory = r'/home/kuijntjes/Desktop/2022-10-12_WholeCellExtractGalLocusCindy/no_sample/20221012_1615_MN30914_AJA380_b85344d5'
+    # directory = r'/home/kuijntjes/Desktop/2022-10-12_WholeCellExtractGalLocusCindy/no_sample/20221012_1615_MN30914_AJA380_b85344d5'
+    directory = r'/home/data'
     experiment = directory+r'/sample_description.xlsx'
     # tombo_filename = fr'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/read_stats.MOD.tombo.per_read_stats'
     tombo_filename = directory + fr'/fast5_pass/barcode{barcode:02d}.read_stats.MOD.tombo.per_read_stats'
