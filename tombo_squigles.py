@@ -1,16 +1,10 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1 import make_axes_locatable
-from nuc_tool import CalcNucPositions
 from pathlib import Path
-from scipy.ndimage import median_filter
-import h5py, re, os
-from scipy import stats
-import re
-import tqdm
-import glob
+import h5py, os, glob
 from tombo.tombo_stats import TomboModel
+import EditChromatin as ec
 
 
 def conjugate_strand(watson, reverse=True):
@@ -73,8 +67,8 @@ def compute_squigle(seq, strand='+', data=None):
     df['normalized'] = (mean - np.mean(mean)) / np.std(mean)
     if data is not None:
         df['data'] = data
-        fit = np.polyfit(df.dropna()['mean'], df.dropna()['data'], 1)
-        df['fitted'] = np.polyval(fit, mean)
+        fit = np.polyfit(df.dropna()['data'], df.dropna()['mean'], 1)[::-1]
+        df['fitted'] = (mean - fit[0]) / fit[1]
     return df
 
 
@@ -87,18 +81,30 @@ if __name__ == '__main__':
     df.sort_index(axis=1, inplace=True)
     seq = ''.join(df['base'])
 
+    w = 100
+    mu = -w * 8.0 / 74
+    ocupancy = ec.calc_nucleosome_positions(seq, w, mu)
+
+    offset = -8
     data = []
+    # from matplotlib.ticker import AutoMinorLocator
+
     for read in df.columns:
         if read[0] in ['+', '-']:
             model = compute_squigle(seq, strand=read[0], data=df[read])
             data.append(df[read] - model['fitted'])
             data.append(df[read])
             plt.figure(figsize=(25, 2))
-            plt.plot(df[read], 'r')
-            plt.plot(model['fitted'][df[read].notna()], 'k')
-            plt.ylim((-4, 4))
+            plt.plot(df[read], 'green', label='data')
+            plt.plot(model['fitted'][df[read].notna()], 'k', label='model')
+            plt.plot(df[read] - model['fitted'][df[read].notna()] + offset, 'red', label='difference')
+            plt.plot(0 * ocupancy + offset, 'k', linewidth=0.5)
+            plt.plot(ocupancy*2 + offset, color = 'blue', label='occupancy')
+            plt.ylim((-10, 4))
             plt.xlim((0, model.index[-1]))
             plt.title(read)
+            plt.legend(loc=2)
+            # plt.axes().xaxis.set_minor_locator(AutoMinorLocator())
             plt.ylabel('normalized current')
             plt.tight_layout()
             plt.savefig(data_dir + f'/squigle{read}.jpg', dpi=1200)
@@ -114,9 +120,9 @@ if __name__ == '__main__':
     # plt.ylim((-3,3))
     # plt.plot(model['fitted'], color = 'black')
 
-    for d in data:
-        his, bins = np.histogram(d[~np.isnan(d)], bins=np.linspace(-3, 3, 500))
-        his = his / np.sum(his)
-        plt.plot(bins_to_centers(bins), his)
-        # plt.yscale("log")
-    plt.show()
+    # for d in data:
+    #     his, bins = np.histogram(d[~np.isnan(d)], bins=np.linspace(-3, 3, 500))
+    #     his = his / np.sum(his)
+    #     plt.plot(bins_to_centers(bins), his)
+    #     # plt.yscale("log")
+    # plt.show()
