@@ -31,7 +31,7 @@ def cmd_detect_mods(fast5_dir, model='alternative', filename_base=''):
     return ' \\\n'.join(cmd)
 
 if __name__ == '__main__':
-    config = 'docker'
+    config = 'local'
     local_base_folder = rf'/home/kuijntjes/Desktop/2022-10-12_WholeCellExtractGalLocusCindy/no_sample/20221012_1615_MN30914_AJA380_b85344d5/fast5_pass/barcode01'
     if config == 'local':
         fast5_dir = local_base_folder
@@ -48,10 +48,10 @@ if __name__ == '__main__':
 
     data_dir = r'/home/kuijntjes/Desktop/2022-10-12_WholeCellExtractGalLocusCindy/no_sample/20221012_1615_MN30914_AJA380_b85344d5/fast5_pass'
     data_dir = r'c:/tmp/DEPC'
+    data_dir = r'/media/noort/Data/users/noort/20220816_1950_MN30914_AJF795_9344cc69/fast5_pass'
+    fast5_dir = 'barcode06'
 
-    fast5_dir = 'barcode03'
-
-    fast5_dir = r'/home/data'
+    #fast5_dir = r'/home/data'
     #fast5_dir = '/'
     print(cmd_docker(data_dir), '\n')
     print(cmd_guppy(fast5_dir, guppy_config, rerio_models), '\n')

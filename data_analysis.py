@@ -31,7 +31,7 @@ if __name__ == '__main__':
     filename = r'/media/noort/Data/users/noort/20220816_1950_MN30914_AJF795_9344cc69/guppy/pass/fastq_runid_c89ca53bdde84e9f9c833a7a4d1a0dc7fd2f53a4_0_0.fastq'
 
 
-    barcode = 8
+    barcode = 6
     experiment = r'/media/noort/Data/users/noort/20220816_1950_MN30914_AJF795_9344cc69/sample_description.xlsx'
     tombo_filename = fr'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/read_stats.MOD.tombo.per_read_stats'
     fasta = rf'/media/noort/Data/users/noort/20220816_barcode{barcode:02d}_selection/LinearReference_CP130.fasta'
